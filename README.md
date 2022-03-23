@@ -1,12 +1,8 @@
-# Introduction
-
-The Kitchen Sink plugin for Koha is meant to be an exhaustive example of all the features a Koha plugin can posses.
-
-If you find any plugin hooks are missing, please let us know by filing a GitHub Issue!
+# Koha-Suomi label printer
 
 # Downloading
 
-From the [release page](https://github.com/bywatersolutions/koha-plugin-kitchen-sink/releases) you can download the relevant *.kpz file
+From the [release page](https://github.com/Hypernova-oy/koha-plugin-label-printer/releases) you can download the relevant *.kpz file
 
 # Installing
 

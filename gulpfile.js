@@ -13,9 +13,9 @@ const today = dt.format('Y-m-d');
 const package_json = JSON.parse(fs.readFileSync('./package.json'));
 const release_filename = `${package_json.name}-v${package_json.version}.kpz`;
 
-const pm_name = 'KitchenSink';
+const pm_name = 'LabelPrinter';
 const pm_file = pm_name+'.pm';
-const pm_file_path = path.join('Koha', 'Plugin', 'Com', 'ByWaterSolutions');
+const pm_file_path = path.join('Koha', 'Plugin', 'Fi', 'KohaSuomi');
 const pm_file_path_full = path.join(pm_file_path, pm_file);
 const pm_file_path_dist = path.join('dist', pm_file_path);
 const pm_file_path_full_dist = path.join(pm_file_path_dist, pm_file);

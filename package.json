@@ -1,8 +1,8 @@
 {
-  "name": "koha-plugin-kitchen-sink",
-  "version": "2.1.30",
-  "previous_version": "2.1.29",
-  "description": "Koha Kitchen Sink Plugin",
+  "name": "koha-plugin-kohasuomi-label-printer",
+  "version": "1.0.0",
+  "previous_version": "1.0.0",
+  "description": "Koha-Suomi Label Printer",
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-cli": "^1.2.2",
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bywatersolutions/koha-plugin-kitchen-sink.git"
+    "url": "git+https://github.com/Hypernova-Oy/koha-plugin-kohasuomi-label-printer.git"
   },
-  "author": "Kyle M Hall <kyle@bywatersolutions.com>",
+  "author": "Olli-Antti Kivilahti <olli-antti.kivilahti@hypernova.fi>",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/bywatersolutions/koha-plugin-kitchen-sink/issues"
+    "url": "https://github.com/Hypernova-Oy/koha-plugin-kohasuomi-label-printer/issues"
   },
-  "homepage": "https://github.com/bywatersolutions/koha-plugin-kitchen-sink#readme",
+  "homepage": "https://github.com/bywatersolutions/koha-plugin-kohasuomi-label-printer#readme",
   "dependencies": {
     "datetime": "0.0.3",
     "jsonfile": "^4.0.0",

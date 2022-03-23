@@ -9,7 +9,7 @@ then
     git commit -a -m "Version auto-incremented  - $TRAVIS_JOB_NUMBER [ci skip]"
     gulp build
     gulp release
-    git remote add github https://$GITHUB_TOKEN@github.com/bywatersolutions/koha-plugin-kitchen-sink
+    git remote add github https://$GITHUB_TOKEN@github.com/Hypernova-Oy/koha-plugin-kohasuomi-label-printer
     git fetch --all
     git push github HEAD:master
   fi

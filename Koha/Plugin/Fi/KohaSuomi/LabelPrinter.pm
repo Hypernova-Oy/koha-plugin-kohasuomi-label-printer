@@ -81,41 +81,6 @@ sub intranet_js {
     |;
 }
 
-
-## If your tool is complicated enough to needs it's own setting/configuration
-## you will want to add a 'configure' method to your plugin like so.
-## Here I am throwing all the logic into the 'configure' method, but it could
-## be split up like the 'report' method is.
-sub configure {
-    my ( $self, $args ) = @_;
-    my $cgi = $self->{'cgi'};
-
-    unless ( $cgi->param('save') ) {
-        my $template = $self->get_template({ file => 'configure.tt' });
-
-        ## Grab the values we already have for our settings, if any exist
-        $template->param(
-            enable_opac_payments => $self->retrieve_data('enable_opac_payments'),
-            foo             => $self->retrieve_data('foo'),
-            bar             => $self->retrieve_data('bar'),
-            last_upgraded   => $self->retrieve_data('last_upgraded'),
-        );
-
-        $self->output_html( $template->output() );
-    }
-    else {
-        $self->store_data(
-            {
-                enable_opac_payments => $cgi->param('enable_opac_payments'),
-                foo                => $cgi->param('foo'),
-                bar                => $cgi->param('bar'),
-                last_configured_by => C4::Context->userenv->{'number'},
-            }
-        );
-        $self->go_home();
-    }
-}
-
 ## This is the 'install' method. Any database tables or other setup that should
 ## be done when the plugin if first installed should be executed in this method.
 ## The installation method should always return true if the installation succeeded
@@ -146,8 +111,8 @@ sub install() {
 sub upgrade {
     my ( $self, $args ) = @_;
 
-#    my $dt = dt_from_string();
-#    $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
+    my $dt = dt_from_string();
+    $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
 
     return 1;
 }

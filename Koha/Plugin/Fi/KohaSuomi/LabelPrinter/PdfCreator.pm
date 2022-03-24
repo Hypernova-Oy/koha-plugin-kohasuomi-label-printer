@@ -19,7 +19,7 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
 use Modern::Perl;
 use Scalar::Util qw(blessed);
 use PDF::Reuse;
-use File::Fu::File;
+use IO::File;
 use Try::Tiny;
 use Scalar::Util qw(blessed);
 
@@ -38,7 +38,7 @@ my $log = Koha::Logger->get({category => __PACKAGE__});
     my $creator = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator->new({
         sheet => Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet,                   #MANDATORY
         margins => {left => 5, top => 5},             #Defaults to 0
-        file => '/tmp/labels.pdf' || File::Fu::File,  #MANDATORY
+        file => '/tmp/labels.pdf',  #MANDATORY
     });
     $creator->create(@barcodes);
 
@@ -70,7 +70,7 @@ sub create {
     my $sheet = $self->getSheet();
 
     ##Start .pdf creation.
-    my $filePath = $self->getFile()->stringify();
+    my $filePath = $self->getFile();
     $log->debug("Writing PDF to '$filePath'") if $log->is_debug;
 #    system("rm", "$filePath");
     prFile($filePath);
@@ -256,12 +256,13 @@ sub setFile {
     my ($self, $filePath) = @_;
     unless ($filePath) {
         my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[0]."():> Parameter 'file' doesn't exist. This must be a full path to the desired .pdf-file location, eg. '/tmp/koha/pdf/labels.pdf' or a File::Fu::File-object");
+        Koha::Exceptions::BadParameter->throw(error => $cc[0]."():> Parameter 'file' doesn't exist. This must be a full path to the desired .pdf-file location, eg. '/tmp/koha/pdf/labels.pdf'");
     }
-    my $file = (blessed($filePath) && $filePath->isa('File::Fu::File')) ? $filePath : File::Fu::File->new($filePath);
-    $file->touch(); #Check that we have a permission to access the file
 
-    $self->{file} = $file;
+    my $fh = IO::File->new($filePath, "w"); #Check that we have a permission to access the file
+    $fh->close;
+
+    $self->{file} = $filePath;
 }
 sub getFile { return shift->{file}; }
 

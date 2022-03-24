@@ -19,14 +19,13 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager;
 use Modern::Perl;
 
 use DateTime;
-use DateTime::Format::HTTP;
-use DateTime::Format::RFC3339;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet;
 use C4::Context;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB;
+use Koha::DateUtils qw( dt_from_string output_pref );
 use Koha::Exceptions;
 
 sub getSheet {
@@ -93,9 +92,10 @@ sub swaggerizeSheetVersion {
     $sv->{author}  += 0   if $sv->{author};
 
     if ($sv->{timestamp}) {
-        my $dt = DateTime::Format::MySQL->parse_datetime( $sv->{timestamp} );
-        $dt->set_time_zone( C4::Context->tz() );
-        $sv->{timestamp}  = DateTime::Format::RFC3339->new()->format_datetime($dt);
+        $sv->{timestamp}  = output_pref({
+            dateformat => 'rfc3339',
+            dt         => dt_from_string($sv->{timestamp}),
+        });
     }
     return $sv;
 }

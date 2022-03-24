@@ -19,11 +19,11 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet;
 use Modern::Perl;
 
 use DateTime;
-use DateTime::Format::HTTP;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Item;
 use C4::Context;
 
+use Koha::DateUtils qw( dt_from_string output_pref );
 use Koha::Exceptions;
 
 sub new {
@@ -153,7 +153,7 @@ sub getAuthor { return shift->{author}; }
 sub setTimestamp {
     my ($self, $timestamp) = @_;
     eval {
-        my $dt = DateTime::Format::HTTP->parse_datetime( $timestamp );
+        my $dt = dt_from_string $timestamp;
         $self->{timestamp} = $dt;
     };
     if ($@) {

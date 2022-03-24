@@ -41,6 +41,11 @@ sub create {
     return try {
         my $s = $c->validation->param('sheet');
         my $sheetHash = JSON::XS->new()->decode($s);
+        my $user = $c->stash('koha.user');
+        $sheetHash->{'author'} = {
+            'userid' => $user->userid,
+            'borrowernumber' => $user->borrowernumber,
+        };
         my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet->new($sheetHash);
         Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::putNewSheetToDB($sheet);
         return $c->render(status => 201, openapi => $sheet->toJSON());

@@ -158,6 +158,9 @@ Labels.GUI.SheetList = function (params) {
             }).addClass("btn btn-default hidden").html('<i class="fa fa-download" aria-hidden="true"></i> Export').appendTo(this.containerElem);
         }
     }
+    this._hideLoader = function() {
+        $("div#loading-sheets").hide(500);
+    }
     this.setSheetListName = function (sheetId, newVal) {
         var sheetListNodeJqHtml = Labels.GUI.SheetList.getSheetListNode(sheetId);
         sheetListNodeJqHtml.find(".title").html(newVal);
@@ -172,6 +175,7 @@ Labels.GUI.SheetList = function (params) {
     }
 
     this._createHtmlElems();
+    this._hideLoader();
     this.display();
 }
 Labels.GUI.SheetList.createListElement = function (sheetList, sheet) {

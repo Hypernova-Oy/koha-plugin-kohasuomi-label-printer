@@ -135,6 +135,8 @@
                 </div>
             </div>
             <div class="col-sm-2 col-sm-pull-10">
+                <h3>Sheets</h3>
+                <div id="loading-sheets">Loading...</div>
                 <div id="sheetListContainer"></div>
             </div>
         </div>

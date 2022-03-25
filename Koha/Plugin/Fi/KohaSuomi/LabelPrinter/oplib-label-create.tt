@@ -2,7 +2,6 @@
     <title>Koha &rsaquo; Tools &rsaquo; Labels &rsaquo; Label printer</title>
     [% INCLUDE 'doc-head-close.inc' %]
     [% INCLUDE 'greybox.inc' %]
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="[% PLUGIN_PATH %]/css/labels.css">
 </head>
 <body id="labels_label-edit-batch" class="tools labels">
@@ -189,7 +188,7 @@
         var dataFormatFunctions = [% dataFormatFunctions %];
         if (! loggedinuser.borrowernumber) alert("Logged in user is unknown. This editor doesn't work. Are you logged in with the database administrator account? Try logging in again with your own credentials.");
     </script>
-    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="[% PLUGIN_PATH %]/js/jquery-ui-1.11.4.min.js"></script>
     <script src="[% PLUGIN_PATH %]/js/tinycolor.js"></script>
     <script src="[% PLUGIN_PATH %]/js/Labels.js"></script>
     <script src="[% PLUGIN_PATH %]/js/Labels/GUI.js"></script>

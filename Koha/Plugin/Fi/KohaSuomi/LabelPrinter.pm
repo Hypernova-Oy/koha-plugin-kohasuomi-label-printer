@@ -8,6 +8,8 @@ use C4::Context;
 use C4::Output qw( output_html_with_http_headers );
 
 use Koha::DateUtils qw( dt_from_string );
+use Koha::Virtualshelfcontent;
+use Koha::Virtualshelves;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Fonts;
@@ -78,7 +80,64 @@ sub intranet_js {
     my ( $self ) = @_;
 
     return q|
+        <script type="text/javascript">
+        $(document).ready(function () {
+            $("body#cat_additem form#f span#addmultiple").after('<div><input type="checkbox" name="addToPrintLabelsList" value="addToPrintLabelsList"/><label for="addToPrintLabelsList">Add to print label list</label></div>');
+            $("body#cat_additem form#f").submit(function(event) {
+
+                var op = $('input[name="op"]').val();
+                if ( op !== "additem" ) {
+                    return false;
+                }
+                var add_to_print_labels_list = false;
+                if ( $('input[name="addToPrintLabelsList"]').prop('checked') ) {
+                    add_to_print_labels_list = true;
+                }
+
+                if ( add_to_print_labels_list ) {
+                    var f952x = $("input[id^='tag_952_subfield_x']");
+                    f952x.val("#add_to_print_labels_list#" + f952x.val());
+                }
+
+            });
+        });
+        </script>
     |;
+}
+
+sub after_item_action {
+    my ( $self, $params ) = @_;
+    my $action  = $params->{action} // '';
+    my $item    = $params->{item};
+    my $item_id = $params->{item_id};
+
+    if ( $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list#/ ) {
+        my $itemnotes = $item->itemnotes_nonpublic;
+        $itemnotes =~ s/#add_to_print_labels_list#//g;
+        $itemnotes = undef if $itemnotes eq "";
+        $item->set( { itemnotes_nonpublic => $itemnotes } );
+        $item->store;
+
+        my $loggedinuser = C4::Context->userenv->{number};
+        my $shelf = Koha::Virtualshelves->find( { owner => $loggedinuser, shelfname => 'labels printing'} );
+        if (!$shelf) {
+            $shelf = Koha::Virtualshelf->new( {
+                shelfname => 'labels printing',
+                owner => $loggedinuser,
+                sortfield => undef,
+                allow_change_from_owner => 1,
+                allow_change_from_others => 0,
+                } )->store;
+        }
+        my $content = Koha::Virtualshelfcontent->new(
+                {
+                    shelfnumber => $shelf->shelfnumber,
+                    biblionumber => $item->biblionumber,
+                    borrowernumber => $loggedinuser,
+                    flags => $item->itemnumber,
+                }
+        )->store;
+    }
 }
 
 ## This is the 'install' method. Any database tables or other setup that should
@@ -188,6 +247,7 @@ sub tool_step1 {
         if (ref $items eq 'ARRAY') {
             foreach my $i (@$items) {
                 push(@$barcodes, $i->{barcode});
+                warn $i->{barcode};
             }
             $template->param(barcodesTextArea => join("\n",@$barcodes));
         }
@@ -283,6 +343,7 @@ sub tool_step1 {
         my @params = ($borrowernumber);
         my $sth3 = $dbh->prepare($query);
         $sth3->execute(@params);
+
         return $sth3->fetchall_arrayref({});
     }
 }

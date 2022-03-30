@@ -153,8 +153,8 @@
             <h3>Import sheet</h3>
             <br/>
             <form id="uploadForm" action="#" method="post">
-              <input type="text" class="form-control hidden" id="importUsername" value="[% USER_INFO.userid %]">
-              <input type="text" class="form-control hidden" id="importUserId" value="[% USER_INFO.borrowernumber %]">
+              <input type="text" class="form-control hidden" id="importUsername" value="[% logged_in_user.userid %]">
+              <input type="text" class="form-control hidden" id="importUserId" value="[% logged_in_user.borrowernumber %]">
               <div class="form-group">
                 <label for="importName">Sheet name</label>
                 <input type="text" class="form-control" id="importName">
@@ -198,7 +198,7 @@
 <script>
     Labels.PrintLabelsList.createFlushButton("#flushPrintLabels", function () {
         return {
-            borrowernumber: parseInt('[% USER_INFO.borrowernumber %]', 10),
+            borrowernumber: parseInt('[% logged_in_user.borrowernumber %]', 10),
             biblionumber: 1,
             itemnumber: 1,
             listname: 'labels printing'

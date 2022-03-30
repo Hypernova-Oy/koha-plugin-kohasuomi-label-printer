@@ -14,17 +14,19 @@ sub add {
     try {
         my $body = $c->req->json;
         my $user = $c->stash('koha.user');
+        unless ( $body->{borrowernumber} ){
+            $body->{borrowernumber} = $user->borrowernumber;
+        }
+
         if ($body->{listname} eq 'labels printing') {
             my $shelf = Koha::Virtualshelves->find( { owner => $user->borrowernumber, shelfname => $body->{listname} } );
             if (!$shelf) {
                 $shelf = eval { Koha::Virtualshelf->new( {
                     shelfname => 'labels printing',
-                    category => 1,
                     owner => $user->borrowernumber,
                     sortfield => undef,
-                    allow_add => 0,
-                    allow_delete_own => 1,
-                    allow_delete_other => 0,
+                    allow_change_from_owner => 1,
+                    allow_change_from_others => 0,
                     } )->store; };
             }
             my $content = Koha::Virtualshelfcontent->new(

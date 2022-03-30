@@ -729,10 +729,6 @@
                 "type": "integer",
                 "description": "internally assigned user identifier"
               },
-              "listContentNumber": {
-                "type": "integer",
-                "description": "internally assigned shelf identifier"
-              },
               "biblionumber": {
                 "type": "integer",
                 "description": "internally assigned biblio identifier"

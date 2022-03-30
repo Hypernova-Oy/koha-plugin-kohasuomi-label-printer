@@ -19,11 +19,11 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels;
 
 use Modern::Perl;
 
-use Koha::Exceptions::Exception;
+use Koha::Exception;
 
 use Exception::Class (
     'Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels' => {
-        isa => 'Koha::Exceptions::Exception',
+        isa => 'Koha::Exception',
         description => "Labels base exception class",
     },
 );

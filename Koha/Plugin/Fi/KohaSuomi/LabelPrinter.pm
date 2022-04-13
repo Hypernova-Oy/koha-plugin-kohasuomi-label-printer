@@ -87,7 +87,7 @@ sub intranet_js {
 
                 var op = $('input[name="op"]').val();
                 if ( op !== "additem" ) {
-                    return false;
+                    return true;
                 }
                 var add_to_print_labels_list = false;
                 if ( $('input[name="addToPrintLabelsList"]').prop('checked') ) {

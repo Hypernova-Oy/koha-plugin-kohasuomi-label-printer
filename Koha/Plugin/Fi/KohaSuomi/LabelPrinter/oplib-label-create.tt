@@ -29,6 +29,15 @@
                         Please correct the faulty barcodes
                     </div>
                     [% END %]
+                    [% IF labelPrinterError %]
+                    <div class="alert">
+                        Unexpected error occurred:
+                        <br />
+                        <b>
+                        [% labelPrinterError %] <br />
+                        </b>
+                    </div>
+                    [% END %]
                     <div>
                         <fieldset class="rows" style="border-bottom: 0px; border: 0px;">
                         <ol><li>

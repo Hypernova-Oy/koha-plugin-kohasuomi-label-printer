@@ -19,6 +19,8 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager;
 use Data::Dumper;
 use Mojo::JSON qw( decode_json );
 use POSIX qw( strftime );
+use Scalar::Util qw( blessed );
+use Try::Tiny;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
@@ -290,14 +292,13 @@ sub tool_step1 {
             return 1;
 
         } catch {
-            die "$_" unless(blessed($_) && $_->can('rethrow'));
-            if ($_->isa('Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems')) {
+            if (blessed($_) && $_->isa('Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems')) {
                 $template->param('badBarcodeErrors', $_->badBunch);
                 $template->param('barcode', $barcodes); #return barcodes if error happens!
                 $template->param(barcodesTextArea => join("\n",@$barcodes)) if $barcodes;
             }
             else {
-                $_->rethrow();
+                $template->param('labelPrinterError', $_);
             }
         };
     }

@@ -1,7 +1,7 @@
 {
   "name": "koha-plugin-kohasuomi-label-printer",
-  "version": "1.0.3",
-  "previous_version": "1.0.2",
+  "version": "1.0.4",
+  "previous_version": "1.0.3",
   "description": "Koha-Suomi Label Printer",
   "devDependencies": {
     "gulp": "^3.9.1",

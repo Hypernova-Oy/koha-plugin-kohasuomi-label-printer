@@ -64,9 +64,9 @@ sub public_barcode39 {
 
     #Validate $text is of proper format
     $text = uc($text);
-    if ($text =~/[^A-Z0-9-.$\/+% ]/) {
+    if ($text =~/[^A-Z0-9-.\$\/+% ]/) {
         my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[3]."():> Given text '$text' has unallowed characters. Only these characters are allowed: A-Z, 0-9, -, ., $, /, +, % and space");
+        Koha::Exceptions::BadParameter->throw(error => $cc[3]."():> Given text '$text' has unallowed characters. Only these characters are allowed: A-Z, 0-9, -, ., \$, /, +, % and space");
     }
 
     my %pos = (
@@ -95,9 +95,9 @@ sub public_barcode128 {
 
     #Validate $text is of proper format
     $text = uc($text);
-    if ($text =~/[^A-Z0-9-.$\/+% ]/) {
+    if ($text =~/[^A-Z0-9-.\$\/+% ]/) {
         my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[3]."():> Given text '$text' has unallowed characters. Only these characters are allowed: A-Z, 0-9, -, ., $, /, +, % and space");
+        Koha::Exceptions::BadParameter->throw(error => $cc[3]."():> Given text '$text' has unallowed characters. Only these characters are allowed: A-Z, 0-9, -, ., \$, /, +, % and space");
     }
 
     my %pos = (

@@ -33,10 +33,10 @@ Labels.PrintLabelsList.createAddButton = function (element, targetingFunction) {
 Labels.PrintLabelsList.putListContentToREST = function (listContent) {
     $.ajax("/api/v1/contrib/kohasuomi/lists/"+listContent.listname+"/contents",
         { "method": "POST",
-          "accepts": "application/json",
           "contentType": "application/json; charset=utf8",
           "processData": false,
           "data": JSON.stringify(listContent),
+          "dataType": "json",
           "success": function (jqXHR, textStatus, errorThrown) {
             var listContent = jqXHR;
             alert(textStatus);
@@ -51,10 +51,10 @@ Labels.PrintLabelsList.putListContentToREST = function (listContent) {
 Labels.PrintLabelsList.removeListContentFromREST = function (listContent) {
     $.ajax("/api/v1/contrib/kohasuomi/lists/"+listContent.listname+"/contents",
         { "method": "DELETE",
-          "accepts": "application/json",
           "contentType": "application/json; charset=utf8",
           "processData": false,
           "data": JSON.stringify(listContent),
+          "dataType": "json",
           "success": function (jqXHR, textStatus, errorThrown) {
             var listContent = jqXHR;
             $("#barcodes").val('');

@@ -24,7 +24,7 @@ Labels.Sheets.getSheetsFromREST = function (callback) {
     $.ajax({
         url: "/api/v1/contrib/kohasuomi/labels/sheets",
         type: "GET",
-        accepts: "application/json",
+        dataType: "json",
         success: function (data, textStatus, jqXHR) {
             Labels.Sheets.jsonToSheets(data);
             if (callback) callback(Labels.Sheets.sheets, textStatus, jqXHR);
@@ -72,7 +72,7 @@ Labels.Sheets.saveNewToREST = function (sheet, callback) {
     $.ajax({
         url: "/api/v1/contrib/kohasuomi/labels/sheets",
         type: "POST",
-        accepts: "application/json",
+        dataType: "json",
         contentType: "application/x-www-form-urlencoded; charset=UTF-8",
         data: {sheet: JSON.stringify(json)},
         success: function (data, textStatus, jqXHR) {
@@ -89,7 +89,7 @@ Labels.Sheets.saveUpdatedToREST = function (sheet, callback) {
     $.ajax({
         url: "/api/v1/contrib/kohasuomi/labels/sheets",
         type: "PUT",
-        accepts: "application/json",
+        dataType: "json",
         contentType: "application/x-www-form-urlencoded; charset=UTF-8",
         data: {sheet: JSON.stringify(json)},
         success: function (data, textStatus, jqXHR) {
@@ -128,7 +128,7 @@ Labels.Sheets.importToREST = function (sheet) {
     $.ajax({
         url: "/api/v1/contrib/kohasuomi/labels/sheets",
         type: "POST",
-        accepts: "application/json",
+        dataType: "json",
         contentType: "application/x-www-form-urlencoded; charset=UTF-8",
         async: false,
         data: {sheet: JSON.stringify(sheet)},

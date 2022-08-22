@@ -19,11 +19,11 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB;
 
 use Modern::Perl;
 
-use Koha::Exceptions::Exception;
+use Koha::Exception;
 
 use Exception::Class (
     'Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB' => {
-        isa => 'Koha::Exceptions::Exception',
+        isa => 'Koha::Exception',
         description => 'Something wrong with the database',
     },
 );

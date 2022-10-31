@@ -502,7 +502,7 @@
         }
       ],
       "produces": [
-        ""
+        "application/json"
       ],
       "summary": "Delete a label positioning sheet",
       "description": "By default only deletes the newest version, exposing the older version.",

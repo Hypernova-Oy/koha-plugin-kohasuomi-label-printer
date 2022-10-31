@@ -41,6 +41,7 @@ Labels.Sheets.getSheetFromREST = function (sheetId, version) {
     $.ajax({
         url: url,
         type: "GET",
+        dataType: "json",
         success: function (data, textStatus, jqXHR) {
             Labels.Sheets.jsonToSheet(data);
             if (callback) callback(data, textStatus, jqXHR);

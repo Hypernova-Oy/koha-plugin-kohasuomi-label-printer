@@ -109,7 +109,7 @@ sub get {
     return try {
         my $id = $c->validation->param('sheet_identifier');
         my $version = $c->validation->param('sheet_version');
-        my $sheetRow = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetFromDB( $id, $version );
+        my $sheetRow = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetFromDB( $id, '', $version );
 
         if ($sheetRow) {
             return $c->render( status => 200, openapi => $sheetRow->{sheet});

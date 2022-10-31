@@ -153,7 +153,8 @@ sub getAuthor { return shift->{author}; }
 sub setTimestamp {
     my ($self, $timestamp) = @_;
     eval {
-        my $dt = dt_from_string $timestamp;
+        $timestamp = $timestamp . 'Z' unless $timestamp =~ /Z$/;
+        my $dt = dt_from_string($timestamp, 'rfc3339');
         $self->{timestamp} = $dt;
     };
     if ($@) {

@@ -479,7 +479,7 @@
       }
     }
   },
-  "/labels/sheets/{sheet_identifier}/{sheet_version}": {
+  "/labels/sheets/{sheet_identifier}": {
     "delete": {
       "x-mojo-to": "Fi::KohaSuomi::LabelPrinter::Labels::Sheets#delete",
       "operationId": "deleteSheet",

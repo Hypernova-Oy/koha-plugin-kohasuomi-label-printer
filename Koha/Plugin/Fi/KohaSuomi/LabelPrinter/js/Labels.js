@@ -37,7 +37,7 @@ Labels.Sheets.getSheetsFromREST = function (callback) {
 }
 Labels.Sheets.getSheetFromREST = function (sheetId, version) {
     var url = "/api/v1/contrib/kohasuomi/labels/sheets/"+sheetId;
-    if (version) url += "/"+version;
+    if (version) url += "?sheet_version="+version;
     $.ajax({
         url: url,
         type: "GET",
@@ -53,7 +53,7 @@ Labels.Sheets.getSheetFromREST = function (sheetId, version) {
 }
 Labels.Sheets.deleteToREST = function (sheetId, version) {
     var url = "/api/v1/contrib/kohasuomi/labels/sheets/"+sheetId;
-    if (version) url += "/"+version;
+    if (version) url += "?sheet_version="+version;
     $.ajax({
         url: url,
         type: "DELETE",

@@ -98,7 +98,13 @@ sub intranet_js {
 
                 if ( add_to_print_labels_list ) {
                     var f952x = $("input[id^='tag_952_subfield_x']");
-                    f952x.val("#add_to_print_labels_list#" + f952x.val());
+                    var copies = $("#number_of_copies").val();
+
+                    copies = parseInt(copies);
+
+                    console.log("copies on " + copies);
+
+                    f952x.val("#add_to_print_labels_list_" + copies + "#" + f952x.val());
                 }
 
             });
@@ -113,9 +119,16 @@ sub after_item_action {
     my $item    = $params->{item};
     my $item_id = $params->{item_id};
 
-    if ( $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list#/ ) {
+    if ( $action eq 'create' && $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list_(\d+)#/ ) {
+        my $copies = $1;
+        my $add_again = "";
+        if ($copies > 0) {
+            $copies--;
+            $add_again = "#add_to_print_labels_list_$copies#";
+        }
+
         my $itemnotes = $item->itemnotes_nonpublic;
-        $itemnotes =~ s/#add_to_print_labels_list#//g;
+        $itemnotes =~ s/#add_to_print_labels_list_\d+#/$add_again/g;
         $itemnotes = undef if $itemnotes eq "";
         $item->set( { itemnotes_nonpublic => $itemnotes } );
         $item->store;

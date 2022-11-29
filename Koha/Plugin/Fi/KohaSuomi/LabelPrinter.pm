@@ -119,7 +119,7 @@ sub after_item_action {
     my $item    = $params->{item};
     my $item_id = $params->{item_id};
 
-    if ( $action eq 'create' && $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list_(\d+)#/ ) {
+    if ( $action eq 'create' && defined $item->itemnotes_nonpublic && $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list_(\d+)#/ ) {
         my $copies = $1;
         my $add_again = "";
         if ($copies > 0) {

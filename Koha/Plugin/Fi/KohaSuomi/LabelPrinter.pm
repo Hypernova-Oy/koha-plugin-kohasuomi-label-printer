@@ -284,7 +284,7 @@ sub tool_step1 {
     ##Separate the barcodes into an array and sanitate
     if ($barcodes) {
         #Sanitate the barcodes! Always sanitate input!! Mon dieu!
-        $barcodes = [split( /\n/, $barcodes )];
+        $barcodes = [split( /\n/, $barcodes )] if $barcodes ne 'ARRAY';
         for(my $i=0 ; $i<@$barcodes ; $i++){
             $barcodes->[$i] =~ s/^\s*//; #Trim barcode for whitespace.
             $barcodes->[$i] =~ s/\s*$//; #Otherwise very hard to debug!?!!?!?!?

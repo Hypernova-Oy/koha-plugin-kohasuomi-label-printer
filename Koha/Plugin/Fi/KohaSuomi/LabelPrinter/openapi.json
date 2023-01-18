@@ -394,6 +394,9 @@
       "consumes": [
         "multipart/form-data"
       ],
+      "produces": [
+        "application/json"
+      ],
       "responses": {
         "201": {
           "description": "The file uploaded",

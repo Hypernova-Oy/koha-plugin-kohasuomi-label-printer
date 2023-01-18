@@ -118,7 +118,8 @@ sub _executeDataSourceSelector {
 sub _getDataSourceParams {
     my ($element, $itemId) = @_;
     my $dbData = _getDatabaseData($itemId);
-    my $record = C4::Biblio::GetMarcBiblio({ biblionumber => $dbData->{item}->{biblionumber} });
+    my $biblio = Koha::Biblios->find($dbData->{item}->{biblionumber});
+    my $record = $biblio->metadata->record;
     my $dsParams = _getDataSourceSubroutineParams($element);
     return [
         $dbData,

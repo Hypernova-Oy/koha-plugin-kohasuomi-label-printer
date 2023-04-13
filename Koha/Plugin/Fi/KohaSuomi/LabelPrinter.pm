@@ -101,8 +101,9 @@ sub intranet_js {
                     var copies = $("#number_of_copies").val();
 
                     copies = parseInt(copies);
-
-                    console.log("copies on " + copies);
+                    if (isNaN(copies)) {
+                        copies = 0;
+                    }
 
                     f952x.val("#add_to_print_labels_list_" + copies + "#" + f952x.val());
                 }
@@ -122,16 +123,26 @@ sub after_item_action {
     if ( $action eq 'create' && defined $item->itemnotes_nonpublic && $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list_(\d+)#/ ) {
         my $copies = $1;
         my $add_again = "";
-        if ($copies > 0) {
+        if ($copies > 1) {
             $copies--;
             $add_again = "#add_to_print_labels_list_$copies#";
-        }
 
-        my $itemnotes = $item->itemnotes_nonpublic;
-        $itemnotes =~ s/#add_to_print_labels_list_\d+#/$add_again/g;
-        $itemnotes = undef if $itemnotes eq "";
-        $item->set( { itemnotes_nonpublic => $itemnotes } );
-        $item->store;
+            my $itemnotes = $item->itemnotes_nonpublic;
+            $itemnotes =~ s/#add_to_print_labels_list_\d+#/$add_again/g;
+            $itemnotes = undef if $itemnotes eq "";
+            $item->set( { itemnotes_nonpublic => $itemnotes } );
+            $item->store;
+        } else {
+            # clear add_to_print_labels_list_\d
+            my $storage = $item->_result->result_source->storage;
+            $storage->dbh_do(
+                sub {
+                    my ($storage, $dbh, @cols) = @_;
+
+                    $dbh->do("UPDATE items SET itemnotes_nonpublic=REGEXP_REPLACE(itemnotes_nonpublic, ?, '') WHERE biblionumber=?", undef, '#add_to_print_labels_list_[0-9]+#', $item->biblionumber );
+                }
+            );
+        }
 
         my $loggedinuser = C4::Context->userenv->{number};
         my $shelf = Koha::Virtualshelves->find( { owner => $loggedinuser, shelfname => 'labels printing'} );

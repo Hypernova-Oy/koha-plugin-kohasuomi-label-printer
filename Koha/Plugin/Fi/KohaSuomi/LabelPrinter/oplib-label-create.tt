@@ -102,10 +102,15 @@
                       <input type="checkbox" id="sc_boundingBox"/><label for="boundingBox">Draw bounding box</label>
                     </li>
                     <li>
-                      <div id="sc_copy">
-                        <label>Copy as item</label> <input id="NewIdValue" type="text"/>
-                        <button id="copyItem" type="button" class="btn btn-primary">Copy</button>
-                      </div>
+                      <fieldset id="sc_copy">
+                        <legend>Copy an item</legend>
+                        <label for="NewIdValue">Copy as item</label> <input id="NewIdValue" type="text"/><br/>
+                        <label for="CopyOffsetXMM">Offset X in mm</label> <input id="CopyOffsetXMM" type="number"/><br/>
+                        <label for="CopyOffsetYMM">Offset Y in mm</label> <input id="CopyOffsetYMM" type="number"/><br/>
+                        <label for="CopyAutoIncrementNewItemInterval">Increment target item slot in this many copies</label> <input id="CopyAutoIncrementNewItemInterval" type="number"/><br/>
+                        <label for="CopyItemAutoIncrementCounter">Increment counter</label> <input id="CopyItemAutoIncrementCounter" type="number" disabled="true"/><br/>
+                        <button id="copyItem" type="button" class="btn btn-primary">Copy</button><label class="hint" for="copyItem">Shortcut 'Alt+c'</label><br/>
+                      </fieldset>
                     </li>
                     <li>
                       <input type="color" id="sc_colour"/><label for="sc_colour">Colour</label>
@@ -213,5 +218,8 @@
             listname: 'labels printing'
         };
     });
+
+    shortcut.add('Alt+c',function (){ $("#copyItem").click(); });
+
 </script>
     [% INCLUDE 'intranet-bottom.inc' %]

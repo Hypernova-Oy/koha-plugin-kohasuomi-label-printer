@@ -21,9 +21,13 @@ Labels.GUI.copyActive = function () {
         alert(message.find(".item-missing").text());
     }
     var regionid = cloned.attr("id").replace("region","");
-    var NextItemId = $('#NewIdValue').val();
+    var NextItemId = $('#NewIdValue').val() || Labels.Sheets.getActiveSheet().items.length;
     var firstUnusedItem = $( "#regionsDispenser" ).find(".staged").text();
-    if(NextItemId.length == 0) {
+
+    var offsetXpx = (+Labels.GUI.mmToPx($('#CopyOffsetXMM').val() || 10));
+    var offsetYpx = (+Labels.GUI.mmToPx($('#CopyOffsetYMM').val() || 10));
+
+    if(! NextItemId > 0) {
         alert(message.find(".number-missing").text());
     } else if (parseInt(NextItemId) > parseInt(firstUnusedItem)) {
         alert(message.find(".greater-than").text());
@@ -33,10 +37,17 @@ Labels.GUI.copyActive = function () {
         var region = Labels.Regions.getRegion(regionid);
         Labels.Regions.dispenseRegion(sheet, sheet.htmlElem, parseInt(NextItemId), cloned.offset(), region);
         var newDiv = $( "#sheet"+Labels.GUI.activeSheetId ).children().last();
-        newDiv.offset({top: cloned.offset().top+10, left: cloned.offset().left+10});
+        newDiv.offset({top: cloned.offset().top+offsetYpx, left: cloned.offset().left+offsetXpx});
         newDiv.css("width", $(cloned).css("width"));
         newDiv.css("height", $(cloned).css("height"));
         $(cloned).find('.element').clone().appendTo(newDiv);
+
+        //Increment NewIdValue after enough iterations
+        $('#CopyItemAutoIncrementCounter').val((+$('#CopyItemAutoIncrementCounter').val())+1);
+        if ((+$('#CopyAutoIncrementNewItemInterval').val()) && (+$('#CopyItemAutoIncrementCounter').val()) >= (+$('#CopyAutoIncrementNewItemInterval').val())) {
+            $('#CopyItemAutoIncrementCounter').val(0);
+            $('#NewIdValue').val(++NextItemId);
+        }
     }
 }
 

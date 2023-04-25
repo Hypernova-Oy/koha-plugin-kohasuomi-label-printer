@@ -288,6 +288,7 @@ sub tool_step1 {
     $marginsCookie->{value}->[0] = $leftMargin;
     $marginsCookie->{value}->[1] = $topMargin;
     $marginsCookie->{value}->[2] = $sheetId;
+    $marginsCookie->{samesite} = 'Strict';
     $template->param(margins => $margins);
     $template->param(sheetId => $sheetId);
 

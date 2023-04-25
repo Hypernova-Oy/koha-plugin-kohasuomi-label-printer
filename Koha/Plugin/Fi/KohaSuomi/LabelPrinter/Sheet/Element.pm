@@ -72,7 +72,7 @@ sub setDimensions {
         my @cc = caller(0);
         Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'dimensions' is missing, or is not an object/hash ".$self->_exceptionId());
     }
-    unless ($dimensions->{width} =~ /^\d+$/ && $dimensions->{height} =~ /^\d+$/) {
+    unless ($dimensions->{width} =~ /^\d+\.?\d*$/ && $dimensions->{height} =~ /^\d+\.?\d*$/) {
         my @cc = caller(0);
         Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'dimensions' has bad width and/or height ".$self->_exceptionId());
     }
@@ -91,7 +91,7 @@ sub setPosition {
         my @cc = caller(0);
         Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'position' is missing, or is not an object/hash ".$self->_exceptionId());
     }
-    unless ($position->{left} =~ /^-?\d+$/ && $position->{top} =~ /^-?\d+$/) {
+    unless ($position->{left} =~ /^-?\d+\.?\d*$/ && $position->{top} =~ /^-?\d+\.?\d*$/) {
         my @cc = caller(0);
         Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'position' has bad 'left' and/or 'top' ".$self->_exceptionId());
     }

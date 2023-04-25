@@ -103,7 +103,7 @@
                     </li>
                     <li>
                       <fieldset id="sc_copy">
-                        <legend>Copy an item</legend>
+                        <legend>Copy a Region</legend>
                         <label for="NewIdValue">Copy as item</label> <input id="NewIdValue" type="text"/><br/>
                         <label for="CopyOffsetXMM">Offset X in mm</label> <input id="CopyOffsetXMM" type="number"/><br/>
                         <label for="CopyOffsetYMM">Offset Y in mm</label> <input id="CopyOffsetYMM" type="number"/><br/>

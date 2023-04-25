@@ -14,7 +14,7 @@ Labels.GUI.deleteActive = function () {
     object.remove();
 }
 
-Labels.GUI.copyActive = function () {
+Labels.GUI.copyActiveRegion = function () {
     var cloned = $(".activeTarget:first");
     var message = $(".alert-errors");
     if(cloned.length == 0) {
@@ -24,8 +24,9 @@ Labels.GUI.copyActive = function () {
     var NextItemId = $('#NewIdValue').val() || Labels.Sheets.getActiveSheet().items.length;
     var firstUnusedItem = $( "#regionsDispenser" ).find(".staged").text();
 
-    var offsetXpx = (+Labels.GUI.mmToPx($('#CopyOffsetXMM').val() || 10));
-    var offsetYpx = (+Labels.GUI.mmToPx($('#CopyOffsetYMM').val() || 10));
+    targetOffset = cloned.offset();
+    targetOffset.top += (+Labels.GUI.mmToPx($('#CopyOffsetYMM').val() || 10));
+    targetOffset.left += (+Labels.GUI.mmToPx($('#CopyOffsetXMM').val() || 10));
 
     if(! NextItemId > 0) {
         alert(message.find(".number-missing").text());
@@ -35,12 +36,7 @@ Labels.GUI.copyActive = function () {
         $(".activeTarget:first").removeClass("activeTarget");
         var sheet = Labels.Sheets.getSheet(Labels.GUI.activeSheetId);
         var region = Labels.Regions.getRegion(regionid);
-        Labels.Regions.dispenseRegion(sheet, sheet.htmlElem, parseInt(NextItemId), cloned.offset(), region);
-        var newDiv = $( "#sheet"+Labels.GUI.activeSheetId ).children().last();
-        newDiv.offset({top: cloned.offset().top+offsetYpx, left: cloned.offset().left+offsetXpx});
-        newDiv.css("width", $(cloned).css("width"));
-        newDiv.css("height", $(cloned).css("height"));
-        $(cloned).find('.element').clone().appendTo(newDiv);
+        Labels.Regions.dispenseRegion(sheet, sheet.htmlElem, parseInt(NextItemId), targetOffset, region);
 
         //Increment NewIdValue after enough iterations
         $('#CopyItemAutoIncrementCounter').val((+$('#CopyItemAutoIncrementCounter').val())+1);

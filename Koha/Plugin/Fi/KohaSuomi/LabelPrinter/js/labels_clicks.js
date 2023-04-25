@@ -3,7 +3,7 @@ Labels.init();
 
 
 $("#regionDeleter").click(function() {Labels.GUI.deleteActive()});
-$("#copyItem").click(function() {Labels.GUI.copyActive()});
+$("#copyItem").click(function() {Labels.GUI.copyActiveRegion()});
 $("#closeEditor").click(function() {Labels.GUI.SheetEditor.hide()});
 $("#elementDispenser").draggable({
     helper: "clone"

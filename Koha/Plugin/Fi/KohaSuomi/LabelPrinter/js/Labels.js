@@ -146,24 +146,7 @@ Labels.Sheets.importToREST = function (sheet) {
 Labels.Sheets.jsonToSheets = function (jsonSheets) {
     for (var si=0 ; si < jsonSheets.length ; si++) {
         var sheetJson = jsonSheets[si];
-        if (typeof sheetJson == "string") {
-            sheetJson = JSON.parse(sheetJson);
-        }
-        var sheet = new Labels.Sheet($("#sheetContainer"), sheetJson);
-        for (var ii=0 ; ii < sheetJson.items.length ; ii++) {
-            var itemJson = sheetJson.items[ii]
-            var item = new Labels.Item(sheet, itemJson);
-
-            for (var ri=0 ; ri < itemJson.regions.length ; ri++) {
-                var regionJson = itemJson.regions[ri];
-                var region = new Labels.Region(item, regionJson);
-
-                for (var ei=0 ; ei < regionJson.elements.length ; ei++) {
-                    var elementJson = regionJson.elements[ei];
-                    var element = new Labels.Element(region, elementJson);
-                }
-            }
-        }
+        Labels.Sheets.jsonToSheet(sheetJson);
     }
 }
 Labels.Sheets.jsonToSheet = function (sheetJson) {
@@ -178,11 +161,6 @@ Labels.Sheets.jsonToSheet = function (sheetJson) {
         for (var ri=0 ; ri < itemJson.regions.length ; ri++) {
             var regionJson = itemJson.regions[ri];
             var region = new Labels.Region(item, regionJson);
-
-            for (var ei=0 ; ei < regionJson.elements.length ; ei++) {
-                var elementJson = regionJson.elements[ei];
-                var element = new Labels.Element(region, elementJson);
-            }
         }
     }
 }
@@ -384,9 +362,12 @@ Labels.Item = function(sheet, params) {
     sheet.addItem(this);
 
     this.createRegion = function (offset, copyregion) {
-        var region = new Labels.Region(this, {});
         if (copyregion) {
-            region.elements = copyregion.elements;
+            var serialized = copyregion.toJSON();
+            var region = new Labels.Region(this, serialized);
+        }
+        else {
+            var region = new Labels.Region(this, {});
         }
         if (offset) {
             Labels.GUI.reorientOffsetToParent(this.sheet.htmlElem, region.htmlElem, offset);
@@ -469,14 +450,10 @@ Labels.Region = function(item, params) {
     }
     this.setPosition = function (pos) {
         if (!pos) {
-            pos = {};
+            pos = {top: 0, left: 0};
         }
-        if (pos.top) {
-            this.htmlElem.css("top", pos.top+"px");
-        }
-        if (pos.left) {
-            this.htmlElem.css("left",pos.left+"px");
-        }
+        this.htmlElem.css("top", pos.top+"px");
+        this.htmlElem.css("left",pos.left+"px");
         this.position = pos;
     }
     this.setSpacings = function (dim, pos) {
@@ -506,6 +483,13 @@ Labels.Region = function(item, params) {
             me.elements.push( this.elements[id].toJSON() );
         }
         return me;
+    }
+
+    if (params.elements) {
+        for (var ei=0 ; ei < params.elements.length ; ei++) {
+            var elementJson = params.elements[ei];
+            var element = new Labels.Element(this, elementJson);
+        }
     }
 
     this.setSpacings(params.dimensions, params.position);
@@ -635,14 +619,10 @@ Labels.Element = function(region, params) {
     }
     this.setPosition = function (pos) {
         if (!pos) {
-            pos = {};
+            pos = {top: 0, left: 0};
         }
-        if (pos.top) {
-            this.htmlElem.css("top", pos.top+"px");
-        }
-        if (pos.left) {
-            this.htmlElem.css("left",pos.left+"px");
-        }
+        this.htmlElem.css("top", pos.top+"px");
+        this.htmlElem.css("left",pos.left+"px");
         this.position = pos;
     }
     this.setSpacings = function (dim, pos) {

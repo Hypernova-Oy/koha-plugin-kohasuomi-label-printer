@@ -601,6 +601,9 @@ Labels.GUI.RegionDispenser.createNewItemHandle = function (itemIndex) {
                             id: 'regionDispenser'+itemIndex,
                             class: "button item staged"
     }).html(itemIndex);
+    regionDispenser.click(function (event) {
+        Labels.GUI.RegionDispenser.rotateActiveRegionWithinItem(itemIndex);
+    });
     regionDispenser.draggable({
         helper: "clone"
     });
@@ -611,6 +614,19 @@ Labels.GUI.RegionDispenser.markUsed = function (itemIndex) {
 }
 Labels.GUI.RegionDispenser.markUnused = function (itemIndex) {
     var regionDispenser = $('#regionDispenser'+itemIndex).removeClass("deployed").addClass("staged");
+}
+Labels.GUI.RegionDispenser.rotateActiveRegionWithinItem = function (item) {
+    if (typeof item === 'number') {
+        item = Labels.Sheets.getSheet(Labels.GUI.activeSheetId).getItem(item);
+    }
+    if (typeof item === 'null' || typeof item === 'undefined') { return; }
+    regionIds = Object.keys(item.regions);
+    if (isNaN(item._rotateActiveRegionPointer) || item._rotateActiveRegionPointer >= regionIds.length) {
+        item._rotateActiveRegionPointer = 0;
+    }
+    regionId = regionIds[item._rotateActiveRegionPointer++];
+
+    Labels.GUI.setActive( new Event(1), item.regions[regionId].htmlElem );
 }
 
 //Package Labels.GUI.SheetEditor

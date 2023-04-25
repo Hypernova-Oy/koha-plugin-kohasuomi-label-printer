@@ -30,7 +30,7 @@ use lib '.';
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter;
 my $version  = $Koha::Plugin::Fi::KohaSuomi::LabelPrinter::VERSION;
-my $filename = "koha-plugin-kohasuomi-label-printer-$version.kpz";
+my $filename = "/tmp/koha-plugin-kohasuomi-label-printer-$version.kpz";
 
 say `zip -r $filename Koha/`;
 

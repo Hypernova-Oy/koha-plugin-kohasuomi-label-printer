@@ -54,7 +54,7 @@ sub setDimensions {
     unless ($dimensions && ref($dimensions) eq "HASH") {
         Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dimensions' is missing, or is not an object/hash");
     }
-    unless ($dimensions->{width} =~ /^\d+$/ && $dimensions->{height} =~ /^\d+$/) {
+    unless ($dimensions->{width} =~ /^\d+\.?\d*$/ && $dimensions->{height} =~ /^\d+\.?\d*$/) {
         Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dimensions' has bad width and/or height");
     }
     $self->{dimensions} = $dimensions;
@@ -71,7 +71,7 @@ sub setPosition {
     unless ($position && ref($position) eq "HASH") {
         Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'position' is missing, or is not an object/hash");
     }
-    unless ($position->{left} =~ /^-?\d+$/ && $position->{top} =~ /^-?\d+$/) {
+    unless ($position->{left} =~ /^-?\d+\.?\d*$/ && $position->{top} =~ /^-?\d+\.?\d*$/) {
         Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'position' has bad 'left' and/or 'top'");
     }
     $self->{position} = $position;

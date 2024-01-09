@@ -8,8 +8,6 @@ use C4::Context;
 use C4::Output qw( output_html_with_http_headers );
 
 use Koha::DateUtils qw( dt_from_string );
-use Koha::Virtualshelfcontent;
-use Koha::Virtualshelves;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Fonts;
@@ -119,10 +117,11 @@ sub after_item_action {
     my $action  = $params->{action} // '';
     my $item    = $params->{item};
     my $item_id = $params->{item_id};
-
     if ( $action eq 'create' && defined $item->itemnotes_nonpublic && $item->itemnotes_nonpublic =~ /^#add_to_print_labels_list_(\d+)#/ ) {
+        my $storage;
         my $copies = $1;
         my $add_again = "";
+
         if ($copies > 1) {
             $copies--;
             $add_again = "#add_to_print_labels_list_$copies#";
@@ -134,7 +133,7 @@ sub after_item_action {
             $item->store;
         } else {
             # clear add_to_print_labels_list_\d
-            my $storage = $item->_result->result_source->storage;
+            $storage = $item->_result->result_source->storage;
             $storage->dbh_do(
                 sub {
                     my ($storage, $dbh, @cols) = @_;
@@ -144,25 +143,17 @@ sub after_item_action {
             );
         }
 
+        $storage = $item->_result->result_source->storage unless $storage;
+
         my $loggedinuser = C4::Context->userenv->{number};
-        my $shelf = Koha::Virtualshelves->find( { owner => $loggedinuser, shelfname => 'labels printing'} );
-        if (!$shelf) {
-            $shelf = Koha::Virtualshelf->new( {
-                shelfname => 'labels printing',
-                owner => $loggedinuser,
-                sortfield => undef,
-                allow_change_from_owner => 1,
-                allow_change_from_others => 0,
-                } )->store;
-        }
-        my $content = Koha::Virtualshelfcontent->new(
-                {
-                    shelfnumber => $shelf->shelfnumber,
-                    biblionumber => $item->biblionumber,
-                    borrowernumber => $loggedinuser,
-                    flags => $item->itemnumber,
-                }
-        )->store;
+        $storage->dbh_do(
+            sub {
+                my ($storage, $dbh, @cols) = @_;
+                my $table_print_list = $self->get_qualified_table_name('label_print_list');
+                require Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Lists::Contents;
+                Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Lists::Contents::addDB($loggedinuser, $item->itemnumber);
+            }
+        );
     }
 }
 
@@ -173,10 +164,12 @@ sub after_item_action {
 sub install() {
     my ( $self, $args ) = @_;
 
-    my $table = $self->get_qualified_table_name('label_sheets');
+    my $table_label_sheets = $self->get_qualified_table_name('label_sheets');
+    my $table_print_list = $self->get_qualified_table_name('label_print_list');
 
-    return C4::Context->dbh->do( "
-        CREATE TABLE IF NOT EXISTS $table ( -- stores Item label positioning and styling sheets in a condensed format
+    my $dbh = C4::Context->dbh;
+    $dbh->do("
+        CREATE TABLE IF NOT EXISTS $table_label_sheets ( -- stores Item label positioning and styling sheets in a condensed format
             `id`   int(11) NOT NULL, -- identifier for one branch of sheets. Can have many versions
             `name` varchar(100) NOT NULL,
             `author` int(11) DEFAULT NULL, -- biblionumber of the author who last modified this
@@ -188,13 +181,41 @@ sub install() {
             KEY `name` (`name`),
             CONSTRAINT `labshet_authornumber` FOREIGN KEY (`author`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE SET NULL ON UPDATE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-    " );
+    ") or die($dbh->errstr());
+    $dbh->do("
+        CREATE TABLE IF NOT EXISTS $table_print_list ( -- stores Items added to the print list, for easy printing
+            `id`   int(11) NOT NULL AUTO_INCREMENT,
+            `itemnumber` int(11) NOT NULL,
+            `borrowernumber` int(11) NOT NULL,
+            `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP, -- latest modification time
+            PRIMARY KEY  (`id`),
+            CONSTRAINT `labshetprlist_itemnumber` FOREIGN KEY (`itemnumber`) REFERENCES `items` (`itemnumber`) ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT `labshetprlist_borrowernumber` FOREIGN KEY (`borrowernumber`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE CASCADE ON UPDATE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ") or die($dbh->errstr());
+    return $dbh;
 }
 
 ## This is the 'upgrade' method. It will be triggered when a newer version of a
 ## plugin is installed over an existing older version of a plugin
 sub upgrade {
     my ( $self, $args ) = @_;
+
+    my $table_label_sheets = $self->get_qualified_table_name('label_sheets');
+    my $table_print_list = $self->get_qualified_table_name('label_print_list');
+
+    my $dbh = C4::Context->dbh;
+    $dbh->do("
+        CREATE TABLE IF NOT EXISTS $table_print_list ( -- stores Items added to the print list, for easy printing
+            `id`   int(11) NOT NULL AUTO_INCREMENT,
+            `itemnumber` int(11) NOT NULL,
+            `borrowernumber` int(11) NOT NULL,
+            `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP, -- latest modification time
+            PRIMARY KEY  (`id`),
+            CONSTRAINT `labshetprlist_itemnumber` FOREIGN KEY (`itemnumber`) REFERENCES `items` (`itemnumber`) ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT `labshetprlist_borrowernumber` FOREIGN KEY (`borrowernumber`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE CASCADE ON UPDATE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ") or die($dbh->errstr());
 
     my $dt = dt_from_string();
     $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
@@ -208,9 +229,11 @@ sub upgrade {
 sub uninstall() {
     my ( $self, $args ) = @_;
 
-    my $table = $self->get_qualified_table_name('label_sheets');
+    my $table_label_sheets = $self->get_qualified_table_name('label_sheets');
+    my $table_print_list = $self->get_qualified_table_name('label_print_list');
 
-    return C4::Context->dbh->do("DROP TABLE IF EXISTS $table");
+    return C4::Context->dbh->do("DROP TABLE IF EXISTS $table_label_sheets");
+    return C4::Context->dbh->do("DROP TABLE IF EXISTS $table_print_list");
 }
 
 ## The existance of a 'tool' subroutine means the plugin is capable
@@ -269,7 +292,7 @@ sub tool_step1 {
     my $barcodes = $cgi->param('barcodes');
     unless ($barcodes) {
         $barcodes = [];
-        my $items = getLabelPrintingListItems($loggedinuser);
+        my $items = $self->getLabelPrintingListItems($loggedinuser);
         if (ref $items eq 'ARRAY') {
             foreach my $i (@$items) {
                 push(@$barcodes, $i->{barcode});
@@ -357,21 +380,22 @@ sub tool_step1 {
           #############################################
     }
 
-    sub getLabelPrintingListItems {
-        my ($borrowernumber) = @_;
-        my $dbh=C4::Context->dbh();
-        my $query =
-           "SELECT vc.*, i.*
-             FROM virtualshelfcontents vc
-             LEFT JOIN virtualshelves vs ON vs.shelfnumber = vc.shelfnumber
-             LEFT JOIN items i ON i.itemnumber=vc.flags
-             WHERE vc.borrowernumber=? AND vs.shelfname = 'labels printing' AND i.itemnumber IS NOT NULL";
-        my @params = ($borrowernumber);
-        my $sth3 = $dbh->prepare($query);
-        $sth3->execute(@params);
+}
 
-        return $sth3->fetchall_arrayref({});
-    }
+sub getLabelPrintingListItems {
+    my ($self, $borrowernumber) = @_;
+    my $dbh=C4::Context->dbh();
+    my $label_print_list_table = $self->get_qualified_table_name('label_print_list');
+    my $query =
+       "SELECT vc.*, i.*
+         FROM $label_print_list_table vc
+         LEFT JOIN items i ON i.itemnumber=vc.itemnumber
+         WHERE vc.borrowernumber=? AND i.itemnumber IS NOT NULL";
+    my @params = ($borrowernumber);
+    my $sth3 = $dbh->prepare($query);
+    $sth3->execute(@params);
+
+    return $sth3->fetchall_arrayref({});
 }
 
 sub _get_koha_version {

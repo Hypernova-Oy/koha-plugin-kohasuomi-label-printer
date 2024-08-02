@@ -85,8 +85,7 @@ sub intranet_js {
             $("body#cat_additem form#f span#addmultiple").after('<div><input type="checkbox" name="addToPrintLabelsList" value="addToPrintLabelsList"/><label for="addToPrintLabelsList">Add to print label list</label></div>');
             $("body#cat_additem form#f").submit(function(event) {
 
-                var op = $('input[name="op"]').val();
-                if ( op !== "additem" ) {
+                if ( op !== "cud-additem" ) {
                     return true;
                 }
                 var add_to_print_labels_list = false;

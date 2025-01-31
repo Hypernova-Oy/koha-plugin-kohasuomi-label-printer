@@ -3,6 +3,7 @@
     [% INCLUDE 'doc-head-close.inc' %]
     [% INCLUDE 'greybox.inc' %]
     <link rel="stylesheet" href="[% PLUGIN_PATH %]/css/labels.css">
+    <link rel="stylesheet" href="[% PLUGIN_PATH %]/css/jquery-ui-1.13.3.min.css">
 </head>
 <body id="labels_label-edit-batch" class="tools labels">
     [% INCLUDE 'header.inc' %]
@@ -202,7 +203,7 @@
         var dataFormatFunctions = [% dataFormatFunctions %];
         if (! loggedinuser.borrowernumber) alert("Logged in user is unknown. This editor doesn't work. Are you logged in with the database administrator account? Try logging in again with your own credentials.");
     </script>
-    <script src="[% PLUGIN_PATH %]/js/jquery-ui-1.11.4.min.js"></script>
+    <script src="[% PLUGIN_PATH %]/js/jquery-ui-1.13.3.min.js"></script>
     <script src="[% PLUGIN_PATH %]/js/tinycolor.js"></script>
     <script src="[% PLUGIN_PATH %]/js/Labels.js"></script>
     <script src="[% PLUGIN_PATH %]/js/Labels/GUI.js"></script>

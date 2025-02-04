@@ -26,7 +26,7 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
-our $VERSION = "24.11.00";
+our $VERSION = "24.11.01";
 our $MINIMUM_VERSION = "24.11.00.000";
 
 ## Here is our metadata, some keys are required, some are optional
@@ -34,7 +34,7 @@ our $metadata = {
     name            => 'Koha-Suomi Label Printer',
     author          => 'Olli-Antti Kivilahti',
     date_authored   => '2014-01-30',
-    date_updated    => "2025-01-31",
+    date_updated    => "2025-02-04",
     minimum_version => $MINIMUM_VERSION,
     maximum_version => undef,
     version         => $VERSION,

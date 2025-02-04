@@ -162,7 +162,7 @@ Labels.GUI.SheetList = function (params) {
         if (Permissions.labels.sheets_new) {
             $("<a>",{
                 id: "exportSheet"
-            }).addClass("btn btn-default hidden").html('<i class="fa fa-download" aria-hidden="true"></i> Export').appendTo(this.containerElem);
+            }).addClass("btn btn-default d-none").html('<i class="fa fa-download" aria-hidden="true"></i> Export').appendTo(this.containerElem);
         }
     }
     this._hideLoader = function() {
@@ -211,7 +211,7 @@ Labels.GUI.SheetList.getSheetListNode = function (sheetListId) {
 
 Labels.GUI.SheetList.exportSheet = function (sheet) {
     var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sheet));
-    $('#exportSheet').attr('href', 'data:' + data).attr('download','sheet'+sheet.id+'.json').removeClass('hidden');
+    $('#exportSheet').attr('href', 'data:' + data).attr('download','sheet'+sheet.id+'.json').removeClass('d-none');
 }
 
 Labels.GUI.SheetList.importSheet = function (sheetname, username, userid, file) {

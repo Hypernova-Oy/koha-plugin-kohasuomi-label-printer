@@ -155,7 +155,7 @@
             </div>
         </div>
     </div>
-    <div class="alert-errors hidden">
+    <div class="alert-errors d-none">
       <div class="item-missing">Select copied item first!</div>
       <div class="number-missing">Missing copy number!</div>
       <div class="greater-than">Too big copy number!</div>

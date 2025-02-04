@@ -4,6 +4,12 @@ Originally authored by [@kivilahtio](https://github.com/kivilahtio).
 
 Koha-pluginized by [@taskula](https://github.com/taskula).
 
+# Screenshots
+
+![Label Printer](assets/img/label-1.png)
+
+![Label Printer editor](assets/img/label-2.png)
+
 # Downloading
 
 From the [release page](https://github.com/Hypernova-oy/koha-plugin-label-printer/releases) you can download the relevant *.kpz file

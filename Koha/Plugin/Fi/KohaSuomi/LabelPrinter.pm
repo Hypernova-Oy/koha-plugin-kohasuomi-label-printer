@@ -55,6 +55,7 @@ sub new {
     ## This runs some additional magic and checking
     ## and returns our actual $self
     my $self = $class->SUPER::new($args);
+    $self->{cgi} = CGI->new() unless $self->{cgi};
 
     return $self;
 }
@@ -79,6 +80,7 @@ sub intranet_head {
 ## chance to include other javascript files if necessary.
 sub intranet_js {
     my ( $self ) = @_;
+    return unless ($self->{cgi}->script_name =~ /additem\.pl/);
 
     return q|
         <script type="text/javascript">
@@ -307,9 +309,13 @@ sub tool_step1 {
     #When we are using lableprinter by printing labels, we always get the leftMargin parameter, even when the input field is empty
     my $leftMargin = (defined($cgi->param('leftMargin')) ? $cgi->param('leftMargin') : $marginsCookie->{value}->[0] || 0);
     my $topMargin  = (defined($cgi->param('topMargin'))  ? $cgi->param('topMargin')  : $marginsCookie->{value}->[1] || 0);
-    my $margins = {left => $leftMargin || 0, top => $topMargin || 0};
+    my $bottomMargin  = (defined($cgi->param('bottomMargin'))  ? $cgi->param('bottomMargin') : $marginsCookie->{value}->[3] || 0);
+    my $rightMargin  = (defined($cgi->param('rightMargin'))  ? $cgi->param('rightMargin') : $marginsCookie->{value}->[4] || 0);
+    my $margins = {left => $leftMargin || 0, top => $topMargin || 0, bottom => $bottomMargin || 0, right => $rightMargin || 0};
     $marginsCookie->{value}->[0] = $leftMargin;
     $marginsCookie->{value}->[1] = $topMargin;
+    $marginsCookie->{value}->[3] = $bottomMargin;
+    $marginsCookie->{value}->[4] = $rightMargin;
     $marginsCookie->{value}->[2] = $sheetId;
     $marginsCookie->{samesite} = 'Strict';
     $template->param(margins => $margins);

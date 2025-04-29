@@ -60,12 +60,22 @@
                             <label for="leftMargin">Left margin
                                 <br /> <span class="hint">Should be between -20 and 20.</span>
                             </label>
-                            <input type="number" id="leftMargin" size="3" min="-20" max="20" require [% IF margins.left %] value="[% margins.left %]" [% END %] />
+                            <input type="number" id="leftMargin" name="leftMargin" size="3" min="-20" max="20" require [% IF margins.left %] value="[% margins.left %]" [% END %] />
                         </li><li>
                             <label for="topMargin">Top margin
                                 <br /> <span class="hint">Should be between -20 and 20.</span>
                             </label>
-                            <input type="number" id="topMargin" size="3" min="-20" max="20" require [% IF margins.top %] value="[% margins.top %]" [% END %] />
+                            <input type="number" id="topMargin" name="topMargin" size="3" min="-20" max="20" require [% IF margins.top %] value="[% margins.top %]" [% END %] />
+                        </li><li>
+                            <label for="bottomMargin">Bottom margin
+                                <br /> <span class="hint">Should be between -20 and 20.</span>
+                            </label>
+                            <input type="number" id="bottomMargin" name="bottomMargin" size="3" min="-20" max="20" require [% IF margins.bottom %] value="[% margins.bottom %]" [% END %] />
+                        </li><li>
+                            <label for="rightMargin">Right margin
+                                <br /> <span class="hint">Should be between -20 and 20.</span>
+                            </label>
+                            <input type="number" id="rightMargin" name="rightMargin" size="3" min="-20" max="20" require [% IF margins.right %] value="[% margins.right %]" [% END %] />
                         </li></ol>
                         </fieldset>
                     </div>
@@ -92,6 +102,7 @@
                 </div>
                 <div id="sheetEditorConfig" class="controlGroup">
                     <input type="number" id="sc_dpi"/><label for="sc_dpi">Dots per inch</label>
+                    <input type="number" id="sc_grid"/><label for="sc_grid">Grid size (0 disables)</label>
                 </div>
 
                 <div id="selectionControls" class="controlGroup">

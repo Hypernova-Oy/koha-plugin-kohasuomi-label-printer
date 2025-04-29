@@ -34,6 +34,7 @@ sub new {
     $self->setName($params->{name});
     $self->setId($params->{id});
     $self->setDpi($params->{dpi});
+    $self->setGrid($params->{grid});
     $self->setDimensions($params->{dimensions});
     $self->setVersion($params->{version});
     $self->setAuthor($params->{author});
@@ -63,6 +64,7 @@ sub toHash {
     my $obj = {};
     $obj->{id} = $self->getId();
     $obj->{dpi} = $self->getDpi();
+    $obj->{grid} = $self->getGrid();
     $obj->{name} = $self->getName();
     $obj->{dimensions} = $self->getDimensions();
     $obj->{version} = $self->getVersion();
@@ -97,6 +99,29 @@ sub setDpi {
 }
 sub getDpi { return shift->{dpi}; }
 sub getPdfDpi { return shift->{pdfDpi}; }
+
+=head2 setGrid
+
+OPTIONAL. Old versions are missing this!
+Set the grid size for the sheet.
+
+=cut
+
+sub setGrid {
+    my ($self, $grid) = @_;
+    if ($grid) {
+        unless ($grid =~ /^\d+\.?\d*$/) {
+            Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'grid' is missing or is not a float");
+        }
+        $self->{grid} = $grid;
+    }
+    else {
+        $self->{grid} = 0;
+    }
+}
+sub getGrid { return shift->{grid}; }
+sub getGridPdfWidth { my ($self) = @_; return $self->{grid} * $self->getPdfDpi(); }
+sub getGridPdfHeight { my ($self) = @_; return $self->{grid} * $self->getPdfDpi(); }
 sub setId {
     my ($self, $id) = @_;
     unless ($id =~ /^\d+$/) {

@@ -29,6 +29,8 @@ $("#printLabels").click(function(event) {
     postData.ignoreErrors = ($("#labelPrinter input#ignoreErrors").prop("checked") == "true") ? 1 : 0;
     postData.leftMargin   = $("#labelPrinter input#leftMargin").val();
     postData.topMargin    = $("#labelPrinter input#topMargin").val();
+    postData.bottomMargin = $("#labelPrinter input#bottomMargin").val();
+    postData.rightMargin  = $("#labelPrinter input#rightMargin").val();
 
     var getParams = jQuery.param( postData );
     window.location="/cgi-bin/koha/plugins/run.pl?class=Koha%3A%3APlugin%3A%3AFi%3A%3AKohaSuomi%3A%3ALabelPrinter&method=tool&"+getParams;

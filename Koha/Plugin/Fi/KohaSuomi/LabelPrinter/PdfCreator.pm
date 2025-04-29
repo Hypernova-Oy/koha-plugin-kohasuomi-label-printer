@@ -81,6 +81,7 @@ sub create {
 
     $sheet->setPdfPosition($self->getOrigo());
     $self->printBoundingBox($sheet);
+    $self->printGrid($sheet) if $sheet->getGrid();
 
     my $firstRun = 1; #Used to prevent new page creation for the first label
 
@@ -129,7 +130,12 @@ sub setMediaBoxFromSheet {
         my @cc = caller(0);
         Koha::Exceptions::BadParameter->throw(error => $cc[0]."():> Param \$sheet '$sheet' is not a proper Sheet-object!");
     }
-    my @pos = (0, 0, $sheet->getPdfDimensions()->{width}, $sheet->getPdfDimensions()->{height});
+    my @pos = (
+        0,
+        0,
+        $sheet->getPdfDimensions()->{width} + $self->getMargins()->{left} + $self->getMargins()->{right},
+        $sheet->getPdfDimensions()->{height} + $self->getMargins()->{top} + $self->getMargins()->{bottom},
+    );
     $log->debug("Setting MediaBox as '@pos'") if $log->is_debug;
     prMbox(@pos);
 }
@@ -158,6 +164,28 @@ sub printElement {
         $_->{message} = $idTag."\n".$_->{message};
         $_->rethrow();
     }
+}
+sub printGrid {
+    my ($self, $sheet) = @_;
+    my $sheetWidth = $sheet->getPdfDimensions()->{width};
+    my $sheetHeight = $sheet->getPdfDimensions()->{height};
+    my $origo = $self->getOrigo();
+    my $x = $origo->[0];
+    my $y = $sheetHeight + $origo->[1];
+
+    my $obj_stream = "q\n";                            # save the graphic state
+    $obj_stream .= "0.1 w\n";                         # border line width
+    $obj_stream .= "1.0 0.0 0.0  RG\n";                # border color red
+    for (my $i=0 ; $i<$sheetWidth ; $i+=$sheet->getGridPdfWidth()) {
+        $obj_stream .= ($x+$i)." ".(0)." m\n";
+        $obj_stream .= ($x+$i)." ".($y)." l\n";
+    }
+    for (my $i=0 ; $i<$sheetHeight ; $i+=$sheet->getGridPdfHeight()) {
+        $obj_stream .= (0)." ".($y-$i)." m\n";
+        $obj_stream .= ($sheetWidth)." ".($y-$i)." l\n";
+    }
+    $obj_stream .= "Q\n";                              # restore the graphic state
+    prAdd($obj_stream);
 }
 
 =head _fitText()
@@ -242,13 +270,13 @@ sub setMargins {
         unless (ref($margins) eq 'HASH') {
             Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'margins' is not a hash");
         }
-        unless ($margins->{left} =~ /^-?\d+$/ && $margins->{top} =~ /^-?\d+$/) {
-            Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'margins' has bad 'left' and/or 'top' -attributes");
+        unless ($margins->{left} =~ /^-?\d+$/ && $margins->{top} =~ /^-?\d+$/ && $margins->{bottom} =~ /^-?\d+$/ && $margins->{right} =~ /^-?\d+$/) {
+            Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'margins' has bad 'left', 'top', 'bottom' and/or 'right' -attributes. margins=".Data::Dumper::Dumper($margins));
         }
         $self->{margins} = $margins;
     }
     else {
-        $self->{margins} = {left => 0, top => 0};
+        $self->{margins} = {left => 0, top => 0, bottom => 0, right => 0};
     }
 }
 sub getMargins { return shift->{margins}; }

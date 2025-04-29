@@ -289,7 +289,7 @@ Labels.GUI.Controls.displaySheetControls = function (sheet) {
     }
     $("#sc_grid").parent().show();
     if (sheet.grid) {
-        $("#sc_grid").val( sheet.grid );
+        $("#sc_grid").val( Labels.GUI.pxToMm(sheet.grid) );
     }
     else {
         $("#sc_grid").val("0");

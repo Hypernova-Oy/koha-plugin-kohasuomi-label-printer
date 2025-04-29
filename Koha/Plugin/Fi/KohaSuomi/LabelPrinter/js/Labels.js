@@ -267,6 +267,9 @@ Labels.Sheet = function(parentElem, params) {
         this.author = newAuthor;
         Labels.GUI.sheetlist.setSheetListAuthor(this.id, this.author.userid);
     }
+    this.setGrid = function (newGridMm) {
+        this.grid = Labels.GUI.mmToPx(newGridMm);
+    }
     this.setVersion = function (newVersion) {
         this.version = newVersion;
         Labels.GUI.sheetlist.setSheetListVersion(this.id, this.version);

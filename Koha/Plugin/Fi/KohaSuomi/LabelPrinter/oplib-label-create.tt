@@ -58,22 +58,22 @@
                         <textarea rows="30" cols="20" id="barcodes" tabindex="1" class="focus">[% barcodesTextArea %]</textarea>
                         </li><li>
                             <label for="leftMargin">Left margin
-                                <br /> <span class="hint">Should be between -20 and 20.</span>
+                                <br /> <span class="hint">Divide the margin value by 4 to get the millimeters.</span>
                             </label>
                             <input type="number" id="leftMargin" name="leftMargin" size="3" min="-20" max="20" require [% IF margins.left %] value="[% margins.left %]" [% END %] />
                         </li><li>
                             <label for="topMargin">Top margin
-                                <br /> <span class="hint">Should be between -20 and 20.</span>
+                                <br /> <span class="hint">Margins should be between -20 and 20.</span>
                             </label>
                             <input type="number" id="topMargin" name="topMargin" size="3" min="-20" max="20" require [% IF margins.top %] value="[% margins.top %]" [% END %] />
                         </li><li>
                             <label for="bottomMargin">Bottom margin
-                                <br /> <span class="hint">Should be between -20 and 20.</span>
+                                <br /> <span class="hint">But typically 0 should be used.</span>
                             </label>
                             <input type="number" id="bottomMargin" name="bottomMargin" size="3" min="-20" max="20" require [% IF margins.bottom %] value="[% margins.bottom %]" [% END %] />
                         </li><li>
                             <label for="rightMargin">Right margin
-                                <br /> <span class="hint">Should be between -20 and 20.</span>
+                                <br /> <span class="hint">Custom margins might help with different printer settings.</span>
                             </label>
                             <input type="number" id="rightMargin" name="rightMargin" size="3" min="-20" max="20" require [% IF margins.right %] value="[% margins.right %]" [% END %] />
                         </li></ol>
@@ -102,7 +102,7 @@
                 </div>
                 <div id="sheetEditorConfig" class="controlGroup">
                     <input type="number" id="sc_dpi"/><label for="sc_dpi">Dots per inch</label>
-                    <input type="number" id="sc_grid"/><label for="sc_grid">Grid size (0 disables)</label>
+                    <input type="number" id="sc_grid"/><label for="sc_grid">Grid size in mm (0 disables)</label>
                 </div>
 
                 <div id="selectionControls" class="controlGroup">

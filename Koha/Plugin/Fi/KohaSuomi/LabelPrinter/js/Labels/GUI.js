@@ -287,6 +287,13 @@ Labels.GUI.Controls.displaySheetControls = function (sheet) {
     else {
         $("#sc_dpi").val("");
     }
+    $("#sc_grid").parent().show();
+    if (sheet.grid) {
+        $("#sc_grid").val( sheet.grid );
+    }
+    else {
+        $("#sc_grid").val("0");
+    }
 
     $("#dataSourceFunctionDocs").hide();
     Labels.GUI.tooltip.publish(sheet, null, "reload");

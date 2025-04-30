@@ -63,6 +63,15 @@ sub setRegions {
     }
 }
 sub getRegions { return shift->{regions}; }
+sub getRegionById {
+    my ($self, $id) = @_;
+    foreach my $region (@{$self->getRegions()}) {
+        if ($region->getId() == $id) {
+            return $region;
+        }
+    }
+    return undef;
+}
 sub setParent {
     my ($self, $sheet) = @_;
     unless (blessed($sheet) && $sheet->isa('Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet')) {

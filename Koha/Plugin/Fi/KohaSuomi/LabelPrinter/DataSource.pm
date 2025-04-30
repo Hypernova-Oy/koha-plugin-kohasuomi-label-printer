@@ -192,7 +192,7 @@ sub public_yklKyyti {
     my $item = $params->[0]->{item};
 
     my $itemcallnumber = $item->{itemcallnumber}; #84.2 SLO PK N
-    my @parts = split(/\s+/, $itemcallnumber);
+    my @parts = split(/\s+/, $itemcallnumber || '');
     return ($parts[0]) ? $parts[0] : undef;
 }
 

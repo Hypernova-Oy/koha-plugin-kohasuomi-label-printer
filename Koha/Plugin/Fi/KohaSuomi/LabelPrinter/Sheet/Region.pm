@@ -30,6 +30,8 @@ sub new {
     my $self = {};
     bless($self, $class);
     $self->setParent($item);
+    $self->setId($params->{id});
+    $self->setCloneOfId($params->{cloneOfId});
     $self->setDimensions($params->{dimensions});
     $self->setPosition($params->{position});
     $self->setBoundingBox($params->{boundingBox});
@@ -39,6 +41,8 @@ sub new {
 sub toHash {
     my ($self) = @_;
     my $obj = {};
+    $obj->{id} = $self->getId();
+    $obj->{cloneOfId} = $self->getCloneOfId();
     $obj->{dimensions} = $self->getDimensions();
     $obj->{position} = $self->getPosition();
     $obj->{boundingBox} = ($self->getBoundingBox() == 1) ? 'true' : 'false';
@@ -48,6 +52,38 @@ sub toHash {
         push @{$obj->{elements}}, $ej;
     }
     return $obj;
+}
+sub setId { # New attribute, not present with legacy regions.
+    my ($self, $id) = @_;
+    if ($id) {
+        unless ($id =~ /^\d+$/) {
+            Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'id' is not a number");
+        }
+        $self->{id} = $id;
+    }
+    else {
+        $self->{id} = 0;
+    }
+}
+sub getId {
+    my ($self) = @_;
+    return $self->{id};
+}
+sub setCloneOfId { # New attribute, not present with legacy regions.
+    my ($self, $cloneOfId) = @_;
+    if ($cloneOfId) {
+        unless ($cloneOfId =~ /^\d+$/) {
+            Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'cloneOfId' is not a number");
+        }
+        $self->{cloneOfId} = $cloneOfId;
+    }
+    else {
+        $self->{cloneOfId} = 0;
+    }
+}
+sub getCloneOfId {
+    my ($self) = @_;
+    return $self->{cloneOfId};
 }
 sub setDimensions {
     my ($self, $dimensions) = @_;
@@ -118,7 +154,7 @@ sub getElements { return shift->{elements}; }
 sub setParent {
     my ($self, $item) = @_;
     unless (blessed($item) && $item->isa('Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Item')) {
-        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'parent' is not a Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Item-object");
+        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__."->setParent($item) Parameter 'parent' is not a Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Item-object");
     }
     $self->{parent} = $item;
 }
@@ -130,6 +166,18 @@ sub getSheet {
 sub getItem {
     my ($self) = @_;
     return $self->getParent();
+}
+
+sub cloneElementsToRegion {
+    my ($self, $region) = @_;
+    unless (blessed($region) && $region->isa('Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Region')) {
+        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__."->cloneElementsToRegion($region) Parameter 'region' is not a Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Region-object");
+    }
+    my $elements = $self->getElements();
+    foreach my $element (@$elements) {
+        my $newElement = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Element->new($region, $element->toHash());
+        push(@{$region->{elements}}, $newElement);
+    }
 }
 
 return 1;

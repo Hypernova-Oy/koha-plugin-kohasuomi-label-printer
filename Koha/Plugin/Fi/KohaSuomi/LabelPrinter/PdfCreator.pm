@@ -31,7 +31,7 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
 use Koha::Logger;
-my $log = Koha::Logger->get({category => __PACKAGE__});
+our $log = Koha::Logger->get({category => __PACKAGE__});
 
 =head new
 
@@ -100,18 +100,35 @@ sub create {
 
         next() if (not($barcode) || length($barcode) == 0); #Don't print an empty barcode, but reserve the sticker slot.
         foreach my $region (@{$item->{regions}}) {
-            $region->setPdfPosition($self->getOrigo());
-            $self->printBoundingBox($region);
-            foreach my $element (@{$region->{elements}}) {
-                $element->setPdfPosition($self->getOrigo());
-                $self->printBoundingBox($element);
-                $self->printElement($element, $barcode);
-            }
+            $self->_createRegion($region, $item, $barcode);
         }
     }
 
     prEnd();
     return ($filePath);
+}
+sub _createRegion {
+    my ($self, $region, $item, $barcode) = @_;
+    my $sheet = $self->getSheet();
+
+    if (my $cloneOfId = $region->getCloneOfId()) {
+        my $sourceRegion = $sheet->getRegionById($cloneOfId);
+        if ($sourceRegion) {
+            $sourceRegion->cloneElementsToRegion($region);
+        }
+        else {
+            my $idTag = "Error printing label for Item '$barcode'";
+            Koha::Exceptions::ObjectNotFound->throw(error => $idTag." -- Trying to clone Region with id '$cloneOfId', but Region not found in sheet.");
+        }
+    }
+
+    $region->setPdfPosition($self->getOrigo());
+    $self->printBoundingBox($region);
+    foreach my $element (@{$region->{elements}}) {
+        $element->setPdfPosition($self->getOrigo());
+        $self->printBoundingBox($element);
+        $self->printElement($element, $barcode);
+    }
 }
 
 =head2 setMediaBoxFromSheet
@@ -155,7 +172,7 @@ sub printElement {
     try {
         $log->debug("PrintElement item:'$itemId'") if $log->is_debug;
         my $text = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager::executeDataSource($element, $itemId);
-        $log->debug("PrintElement item:'$itemId', text:'$text'") if $log->is_debug;
+        $log->debug("PrintElement item:'$itemId', text:'".($text || 'undef')."'") if $log->is_debug;
         Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager::executeDataFormat($element, $text);
     } catch { #Simply tag the Exception with the current Element and pass it upstream
         $log->warn("PrintElement item:'$itemId', exception:'$_'") if $log->is_warn;

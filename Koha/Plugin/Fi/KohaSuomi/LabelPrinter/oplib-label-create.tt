@@ -122,6 +122,7 @@
                         <label for="CopyAutoIncrementNewItemInterval">Increment target item slot in this many copies</label> <input id="CopyAutoIncrementNewItemInterval" type="number"/><br/>
                         <label for="CopyItemAutoIncrementCounter">Increment counter</label> <input id="CopyItemAutoIncrementCounter" type="number" disabled="true"/><br/>
                         <button id="copyItem" type="button" class="btn btn-primary">Copy</button><label class="hint" for="copyItem">Shortcut 'Alt+c'</label><br/>
+                        <button id="cloneItem" type="button" class="btn btn-primary">Clone</button><label class="hint" for="cloneItem"></label><br/>
                       </fieldset>
                     </li>
                     <li>

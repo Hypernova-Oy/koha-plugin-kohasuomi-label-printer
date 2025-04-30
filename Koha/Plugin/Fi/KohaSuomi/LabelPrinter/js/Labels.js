@@ -235,8 +235,8 @@ Labels.Sheet = function(parentElem, params) {
         $(this.parentElem).remove( this.htmlElem.attr("id") );
     }
     this.refreshSpacings = function () {
-        this.dimensions.width  = $(this.htmlElem).css("width");
-        this.dimensions.height = $(this.htmlElem).css("height");
+        this.dimensions.width  = Labels.GUI.pxTrim($(this.htmlElem).css("width"));
+        this.dimensions.height = Labels.GUI.pxTrim($(this.htmlElem).css("height"));
     }
     this.getSheet = function () {
         return this;
@@ -293,7 +293,7 @@ Labels.Sheet = function(parentElem, params) {
         var me = {};
         me.name = this.name;
         me.dpi = this.dpi;
-        me.id = this.id
+        me.id = this.id;
         me.grid = this.grid;
         me.dimensions = {};
         me.dimensions.width  = parseFloat(this.dimensions.width);
@@ -366,10 +366,9 @@ Labels.Item = function(sheet, params) {
     this.sheet = sheet;
     sheet.addItem(this);
 
-    this.createRegion = function (offset, copyregion) {
-        if (copyregion) {
-            var serialized = copyregion.toJSON();
-            var region = new Labels.Region(this, serialized);
+    this.createRegion = function (offset, copyregionJSON) {
+        if (copyregionJSON) {
+            var region = new Labels.Region(this, copyregionJSON);
         }
         else {
             var region = new Labels.Region(this, {});
@@ -410,11 +409,28 @@ Labels.Item = function(sheet, params) {
 //Package Labels.Regions
 Labels.Regions = {};
 Labels.Regions.regions = {}; //Keep track of all the regions.
-Labels.Regions.regionIdDispenser = 0;
+Labels.Regions.regionIdDispenser = 1;
+Labels.Regions.dispenseRegionId = function (existingId) {
+    if (existingId) {
+        if (existingId >= Labels.Regions.regionIdDispenser) {
+            Labels.Regions.regionIdDispenser = existingId+1;
+            return existingId;
+        }
+        else {
+            console.warn("Region ID "+existingId+" is less than the dispenser ID "+Labels.Regions.regionIdDispenser+".");
+            return existingId;
+        }
+    }
+    else {
+        return Labels.Regions.regionIdDispenser++;
+    }
+}
 Labels.Region = function(item, params) {
-    this.id = Labels.Regions.regionIdDispenser++;
+    this.id = Labels.Regions.dispenseRegionId(params.id);
+    this.cloneOfId = params.cloneOfId || null;
     this.boundingBox = (params.boundingBox == "true" || params.boundingBox == true) ? true : false;
     this.elements = [];
+    this.clones = [];
     this.item = item;
     //Set references
     this.item.addRegion(this);
@@ -422,10 +438,12 @@ Labels.Region = function(item, params) {
     this.htmlElem = Labels.Regions.createHtmlElement(this, this.item);
 
     this.refreshSpacings = function () {
-        this.dimensions.width  = $(this.htmlElem).css("width");
-        this.dimensions.height = $(this.htmlElem).css("height");
-        this.position.left     = $(this.htmlElem).css("left");
-        this.position.top      = $(this.htmlElem).css("top");
+        this.dimensions.width  = Labels.GUI.pxTrim($(this.htmlElem).css("width"));
+        this.dimensions.height = Labels.GUI.pxTrim($(this.htmlElem).css("height"));
+        this.position.left     = Labels.GUI.pxTrim($(this.htmlElem).css("left"));
+        this.position.top      = Labels.GUI.pxTrim($(this.htmlElem).css("top"));
+
+        this.setDimensions(this.dimensions);
     }
     this.addElement = function (element) {
         this.elements[element.id] = element;
@@ -437,6 +455,12 @@ Labels.Region = function(item, params) {
             element.refreshSpacings();
         }
         return element;
+    }
+    this.setBoundingBox = function (newBoundingBox) {
+        this.boundingBox = newBoundingBox;
+        this.clones.forEach(function(clone) {
+            clone.setBoundingBox(newBoundingBox);
+        });
     }
     this.getSheet = function () {
         return this.item.sheet;
@@ -452,6 +476,10 @@ Labels.Region = function(item, params) {
             this.htmlElem.css("height",dim.height+"px");
         }
         this.dimensions = dim;
+
+        this.clones.forEach(function(clone) {
+            clone.setDimensions(dim);
+        });
     }
     this.setPosition = function (pos) {
         if (!pos) {
@@ -466,6 +494,9 @@ Labels.Region = function(item, params) {
         this.setPosition(pos);
     }
     this.remove = function () {
+        this.clones.forEach(function(clone) {
+            clone.remove();
+        });
         this.htmlElem.remove();
         delete Labels.Regions.regions[this.id]; //Flush global pointer
         this.item._removeRegion(this); //Flush parent pointer
@@ -476,6 +507,8 @@ Labels.Region = function(item, params) {
     }
     this.toJSON = function () {
         var me = {};
+        me.id = this.id;
+        me.cloneOfId = this.cloneOfId;
         me.dimensions = {};
         me.dimensions.width  = parseFloat(this.dimensions.width);
         me.dimensions.height = parseFloat(this.dimensions.height);
@@ -489,6 +522,12 @@ Labels.Region = function(item, params) {
         }
         return me;
     }
+    this.addClone = function (region) {
+        region.cloneOfId = this.id;
+        region.dimensions = this.dimensions;
+        this.clones.push(region);
+        return this;
+    }
 
     if (params.elements) {
         for (var ei=0 ; ei < params.elements.length ; ei++) {
@@ -498,6 +537,11 @@ Labels.Region = function(item, params) {
     }
 
     this.setSpacings(params.dimensions, params.position);
+
+    if (this.cloneOfId) {
+        var sourceRegion = Labels.Regions.getRegion(this.cloneOfId);
+        sourceRegion.addClone(this);
+    }
 }
 //Template for Region
 Labels.Regions.createHtmlElement = function (region, item) {
@@ -506,6 +550,11 @@ Labels.Regions.createHtmlElement = function (region, item) {
         class: "region"
     })
     .html('<label class="itemnumber">'+item.index+'</label>');
+    if (region.cloneOfId) {
+        var itemOfSourceRegion = Labels.Regions.getRegion(region.cloneOfId).item;
+        regionElem.addClass("clone");
+        regionElem.html(regionElem.html()+'<label class="cloneOfItemnumber">'+itemOfSourceRegion.index+'</label>');
+    }
     $(item.sheet.htmlElem).append(regionElem);
     regionElem
     .draggable({
@@ -539,14 +588,14 @@ Labels.Regions.createHtmlElement = function (region, item) {
 
     return regionElem;
 }
-Labels.Regions.dispenseRegion = function (sheet, sheetElem, itemnumber, offset, copyregion) {
+Labels.Regions.dispenseRegion = function (sheet, sheetElem, itemnumber, offset, copyregionJSON) {
     var item = sheet.getItem(itemnumber);
     if (! item) {
         item = sheet.createItem(itemnumber);
         Labels.GUI.RegionDispenser.createNewItemHandle(parseInt(itemnumber,10)+1);
     }
     Labels.GUI.RegionDispenser.markUsed(itemnumber);
-    item.createRegion(offset, copyregion);
+    return item.createRegion(offset, copyregionJSON);
 }
 Labels.Regions.getRegion = function (htmlElemOrId) {
     var region;
@@ -573,10 +622,10 @@ Labels.Element = function(region, params) {
     this.htmlElem = Labels.Elements.createHtmlElement(this);
 
     this.refreshSpacings = function () {
-        this.dimensions.width  = $(this.htmlElem).css("width");
-        this.dimensions.height = $(this.htmlElem).css("height");
-        this.position.left     = $(this.htmlElem).css("left");
-        this.position.top      = $(this.htmlElem).css("top");
+        this.dimensions.width  = Labels.GUI.pxTrim($(this.htmlElem).css("width"));
+        this.dimensions.height = Labels.GUI.pxTrim($(this.htmlElem).css("height"));
+        this.position.left     = Labels.GUI.pxTrim($(this.htmlElem).css("left"));
+        this.position.top      = Labels.GUI.pxTrim($(this.htmlElem).css("top"));
     }
     this.remove = function () {
         this.htmlElem.remove();

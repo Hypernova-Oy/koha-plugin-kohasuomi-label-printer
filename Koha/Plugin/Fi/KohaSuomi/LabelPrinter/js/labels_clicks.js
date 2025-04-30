@@ -4,6 +4,7 @@ Labels.init();
 
 $("#regionDeleter").click(function() {Labels.GUI.deleteActive()});
 $("#copyItem").click(function() {Labels.GUI.copyActiveRegion()});
+$("#cloneItem").click(function() {Labels.GUI.cloneActiveRegion()});
 $("#closeEditor").click(function() {Labels.GUI.SheetEditor.hide()});
 $("#elementDispenser").draggable({
     helper: "clone"

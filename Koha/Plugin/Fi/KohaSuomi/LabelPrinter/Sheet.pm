@@ -218,4 +218,18 @@ sub setItems {
 }
 sub getItems { return shift->{items}; }
 
+sub getRegionById {
+    my ($self, $id) = @_;
+    unless ($id =~ /^\d+$/) {
+        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__."->getRegionById($id) Parameter 'id' is missing or is not a digit");
+    }
+    foreach my $item (@{$self->getItems()}) {
+        my $region = $item->getRegionById($id);
+        if ($region) {
+            return $region;
+        }
+    }
+    return undef;
+}
+
 return 1;

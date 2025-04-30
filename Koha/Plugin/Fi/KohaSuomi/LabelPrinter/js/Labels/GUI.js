@@ -14,17 +14,23 @@ Labels.GUI.deleteActive = function () {
     object.remove();
 }
 
+Labels.GUI.cloneActiveRegion = function () {
+    Labels.GUI.cloneOrCopyActiveRegion(true);
+}
 Labels.GUI.copyActiveRegion = function () {
-    var cloned = $(".activeTarget:first");
+    Labels.GUI.cloneOrCopyActiveRegion(false);
+}
+Labels.GUI.cloneOrCopyActiveRegion = function (doClone) {
+    var cloningSource = $(".activeTarget:first");
     var message = $(".alert-errors");
-    if(cloned.length == 0) {
+    if(cloningSource.length == 0) {
         alert(message.find(".item-missing").text());
     }
-    var regionid = cloned.attr("id").replace("region","");
+    var sourceRegionid = cloningSource.attr("id").replace("region","");
     var NextItemId = $('#NewIdValue').val() || Labels.Sheets.getActiveSheet().items.length;
     var firstUnusedItem = $( "#regionsDispenser" ).find(".staged").text();
 
-    targetOffset = cloned.offset();
+    targetOffset = cloningSource.offset();
     targetOffset.top += (+Labels.GUI.mmToPx($('#CopyOffsetYMM').val() || 10));
     targetOffset.left += (+Labels.GUI.mmToPx($('#CopyOffsetXMM').val() || 10));
 
@@ -35,8 +41,16 @@ Labels.GUI.copyActiveRegion = function () {
     } else {
         $(".activeTarget:first").removeClass("activeTarget");
         var sheet = Labels.Sheets.getSheet(Labels.GUI.activeSheetId);
-        var region = Labels.Regions.getRegion(regionid);
-        Labels.Regions.dispenseRegion(sheet, sheet.htmlElem, parseInt(NextItemId), targetOffset, region);
+        var sourceRegion = Labels.Regions.getRegion(sourceRegionid);
+        var regionJSON = sourceRegion.toJSON();
+        if (doClone) {
+            regionJSON = {
+                cloneOfId: sourceRegionid,
+                position: regionJSON.position,
+                dimensions: regionJSON.dimensions,
+            };
+        }
+        Labels.Regions.dispenseRegion(sheet, sheet.htmlElem, parseInt(NextItemId), targetOffset, regionJSON);
 
         //Increment NewIdValue after enough iterations
         $('#CopyItemAutoIncrementCounter').val((+$('#CopyItemAutoIncrementCounter').val())+1);
@@ -77,6 +91,9 @@ Labels.GUI.mmToPx = function (mm) {
     var sheet = Labels.Sheets.getActiveSheet();
     var dpmm = sheet.dpi / 25.4; //Calculate dpi to dpmm
     return (parseFloat(mm) * dpmm).toFixed(1);
+}
+Labels.GUI.pxTrim = function (cssString) {
+    return cssString.replace(/px$/g, "");
 }
 Labels.GUI.NextItemId = null;
 Labels.GUI.init = function (sheet) {

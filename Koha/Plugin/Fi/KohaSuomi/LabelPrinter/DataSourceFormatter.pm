@@ -207,12 +207,13 @@ sub _formatLines {
     my $width = $element->getPdfDimensions()->{width};
     my $pos = $element->getPdfPosition();
     my $fontSize = $element->getFontSize();
+    my $customAttr = $element->getCustomAttr();
     prFontSize($fontSize);
     _getTTFont($element->getFont());
     my @lines;
 
     #Make the initial measurement should we cut the given text
-    my ($cuttingPos, $line) = _fitText($width, $fontSize, $text);
+    my ($cuttingPos, $line, $freeSpace) = _fitText($width, $fontSize, $text);
     if ($cuttingPos) {
 
         if ($mutator eq 'oneLinerShrink') { #Shrink the font
@@ -257,6 +258,9 @@ sub _formatLines {
         return ($pos, \@lines, $fontSize, $element->getFont(), $element->getColour());
     }
     else {
+        if ($customAttr->{center} && $freeSpace->{right} > 0) {
+            $pos->{x} += $freeSpace->{right}/2; #Center the text
+        }
         return ($pos, [$text], $fontSize, $element->getFont(), $element->getColour());
     }
 }
@@ -306,6 +310,8 @@ sub _fitText {
     $text =~ s/^\s+//;
     my $tooLong; #A boolean (flag) if we had to shorten the text
 
+    my $freeSpace = {left => 0, right => 0};
+
     #my $textWidth = sprintf(  '%1$d', prStrWidth( $text, 'Helvetica', $fontSize )  );
     my $textWidth = sprintf(  '%1$d', prStrWidth( $text, undef, $fontSize )  );
     $availableWidth = sprintf('%1$d', $availableWidth); #Making sure this is an integer so Perl wont go crazy during float comparisons.
@@ -314,8 +320,9 @@ sub _fitText {
         $textWidth = sprintf(  '%1$d', prStrWidth( $text )  );
         $tooLong = 1;
     }
-    return (length $text, $text) if $tooLong;
-    return (undef, $text);
+    $freeSpace->{right} = $availableWidth - $textWidth;
+    return (length $text, $text, $freeSpace) if $tooLong;
+    return (undef, $text, $freeSpace);
 }
 
 =head _getTTFont

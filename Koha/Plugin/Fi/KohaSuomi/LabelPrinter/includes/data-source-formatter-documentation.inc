@@ -62,7 +62,9 @@
 <div class="dsfod-doc" id="dsfod-oneLiner">
     <span class="title">One-liner</span>
     <span class="comment">
-        Prints the given data elements as one line, removing characters that wouldn't fit to the given width.
+        Prints the given data elements as one line, removing characters that wouldn't fit to the given width.<br/>
+        Custom attributes:<br/>
+        <b>center=1</b><br/>
     </span>
 </div>
 <div class="dsfod-doc" id="dsfod-oneLinerShrinkText">

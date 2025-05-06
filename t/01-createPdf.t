@@ -30,9 +30,12 @@ use warnings;
 use utf8;
 
 use JSON::XS;
+use PDF::Reuse;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 use Test::Deep;
+
+use t::Lib;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter;
 
@@ -82,92 +85,7 @@ subtest("Scenario: Update a sheet.", sub {
 
   $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new(); #This implicitly calls install()
 
-  my $sheetJSON = <<JSON;
-  {
-    "name": "Testi",
-    "dpi": "100",
-    "id": "3",
-    "grid": "19.7",
-    "dimensions": {
-      "width": 456,
-      "height": 413
-    },
-    "version": "0.4",
-    "author": {
-      "userid": "hypernova.kivilahtio",
-      "borrowernumber": 1
-    },
-    "timestamp": "2025-04-30T07:39:41",
-    "boundingBox": true,
-    "items": [
-      {
-        "index": 1,
-        "regions": [
-          {
-            "id": 43,
-            "cloneOfId": null,
-            "dimensions": {
-              "width": 120,
-              "height": 76
-            },
-            "position": {
-              "left": 25,
-              "top": 27.2667
-            },
-            "boundingBox": false,
-            "elements": [
-              {
-                "id": 300140,
-                "dimensions": {
-                  "width": 30,
-                  "height": 30
-                },
-                "position": {
-                  "left": 26,
-                  "top": 15.6333
-                },
-                "boundingBox": true,
-                "dataSource": "\\"TESTI\\"",
-                "dataFormat": "oneLiner",
-                "fontSize": 12,
-                "font": "H",
-                "customAttr": "",
-                "colour": {
-                  "r": 0,
-                  "g": 0,
-                  "b": 0,
-                  "a": 1
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "index": 2,
-        "regions": [
-          {
-            "id": 45,
-            "cloneOfId": 43,
-            "dimensions": {
-              "width": 120,
-              "height": 76
-            },
-            "position": {
-              "left": 103.7,
-              "top": 105.967
-            },
-            "boundingBox": false,
-            "elements": []
-          }
-        ]
-      }
-    ]
-  }
-JSON
-  my $sheetHash = JSON::XS->new()->decode($sheetJSON);
-
-  $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet->new($sheetHash);
+  $sheet = t::Lib::mockSheet();
   ok($sheet, "Given a Sheet");
 
   my $sourceRegion = $sheet->getRegionById(43);
@@ -181,6 +99,59 @@ JSON
   ok($creator = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator->new({margins => undef, sheet => $sheet, file => $testFile}), "A PDF creator is created");
   ok($filePath = $creator->create($barcodes), "A PDF is created");
   is($filePath, $testFile, "The PDF is created in the correct location");
+});
+
+subtest("Scenario: DataSourceFormatter.", sub {
+  my ($plugin, $margins, $sheet, $barcodes, $creator, $filePath);
+  $barcodes = $testBarcodes;
+  plan tests => 6;
+
+  $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new(); #This implicitly calls install()
+
+  $sheet = t::Lib::mockSheet();
+  ok($sheet, "Given a Sheet");
+
+  ok($creator = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator->new({margins => undef, sheet => $sheet, file => $testFile}), "A PDF creator is created");
+  ok($filePath = $creator->create($barcodes, 'no-end-pdf-creation'), "A PDF is created");
+  is($filePath, $testFile, "The PDF is created in the correct location");
+
+  subtest("DataSourceFormatter: oneLiner", sub {
+    my ($element, $pdfPos, $lines, $fontSize, $font, $colour);
+    plan tests => 6;
+
+    ok($element = $sheet->getRegionById(43)->getElements()->[0], "Given an Element");
+    ok(!%{$element->getCustomAttr()}, "With no custom attributes");
+
+    ($pdfPos, $lines, $fontSize, $font, $colour) = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceFormatter::_formatLines(
+      $element,
+      $element->getDataSource(),
+      "oneLiner",
+    );
+    ok(1, "When the lines are formatted");
+
+    is($pdfPos->{x}, 15, "Then Position left");
+    is($pdfPos->{y}, 398, "And Position top");
+    is_deeply($lines, ['"TESTI1"'], "And Lines");
+  });
+
+  subtest("DataSourceFormatter: oneLiner center=1", sub {
+    my ($element, $pdfPos, $lines, $fontSize, $font, $colour);
+    plan tests => 6;
+
+    ok($element = $sheet->getRegionById(43)->getElements()->[1], "Given an Element");
+    ok($element->getCustomAttr->{center}, "With center custom attribute");
+$DB::single=1;
+    ($pdfPos, $lines, $fontSize, $font, $colour) = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceFormatter::_formatLines(
+      $element,
+      $element->getDataSource(),
+      "oneLiner",
+    );
+    ok(1, "When the lines are formatted");
+
+    is($pdfPos->{x}, 19, "Then Position left");
+    is($pdfPos->{y}, 398, "And Position top");
+    is_deeply($lines, ['"TESTI2"'], "And Lines");
+  });
 });
 
 $schema->storage->txn_rollback;

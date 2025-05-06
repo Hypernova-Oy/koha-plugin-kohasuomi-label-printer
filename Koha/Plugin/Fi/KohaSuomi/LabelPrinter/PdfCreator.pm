@@ -65,7 +65,7 @@ in css3 start from top left, thus the sheet coordinates need to be inverted some
 =cut
 
 sub create {
-    my ($self, $itemBarcodes) = @_;
+    my ($self, $itemBarcodes, $noEnd) = @_;
     my $items = $self->_normalizeBarcodesToItems($itemBarcodes); #Check if we have bad items.
     my $sheet = $self->getSheet();
 
@@ -104,7 +104,7 @@ sub create {
         }
     }
 
-    prEnd();
+    prEnd() unless $noEnd;
     return ($filePath);
 }
 sub _createRegion {

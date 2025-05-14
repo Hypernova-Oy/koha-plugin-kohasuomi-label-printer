@@ -194,8 +194,8 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" form="uploadForm" id="importNew" class="btn btn-primary" data-dismiss="modal"><i class="fa fa-upload" aria-hidden="true"></i> Import</button>
-            <button type="button" id="dismissModal" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" form="uploadForm" id="importNew" class="btn btn-primary" data-bs-dismiss="modal"><i class="fa fa-upload" aria-hidden="true"></i> Import</button>
+            <button type="button" id="dismissModal" class="btn btn-default" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>

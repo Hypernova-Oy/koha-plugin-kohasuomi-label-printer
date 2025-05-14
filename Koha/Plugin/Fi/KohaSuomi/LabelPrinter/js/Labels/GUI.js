@@ -172,8 +172,8 @@ Labels.GUI.SheetList = function (params) {
         if (Permissions.labels.sheets_new) {
             $("<button/>",{
                 id: "importSheet",
-                "data-toggle":"modal",
-                "data-target":"#importModal"
+                "data-bs-toggle":"modal",
+                "data-bs-target":"#importModal"
             }).addClass("btn btn-default").html('<i class="fa fa-upload" aria-hidden="true"></i> Import').appendTo(this.containerElem);
         }
         if (Permissions.labels.sheets_new) {

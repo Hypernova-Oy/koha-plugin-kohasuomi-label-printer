@@ -220,15 +220,15 @@ sub _formatLines {
             my $i = 0; #Iteration counter to prevent an endless loop
             while($cuttingPos && $i++ < 10) {
                 ($fontSize, undef) = prFontSize( $fontSize-1 ); #Shrink the font to take less space
-                ($cuttingPos, $line) = _fitText($width, $fontSize, $text);
+                ($cuttingPos, $line, undef) = _fitText($width, $fontSize, $text);
             }
             push(@lines, $line);
         }
         elsif ($mutator eq 'twoLiner') {
-            ($cuttingPos, $line) = _fitText($width, $fontSize, $text);
+            ($cuttingPos, $line, undef) = _fitText($width, $fontSize, $text);
             push(@lines, $line);
             if ($cuttingPos) { #When the text is measured again in smaller font we might not have to cut it at all!
-                $line = _fitText(  $width, $fontSize, substr($text, $cuttingPos)  ); #Cut the second row text from the first row text
+                (undef, $line, undef) = _fitText(  $width, $fontSize, substr($text, $cuttingPos)  ); #Cut the second row text from the first row text
                 push(@lines, $line);
             }
         }
@@ -237,17 +237,17 @@ sub _formatLines {
             my $i = 0; #Iteration counter to prevent an endless loop
             my $minFontSize = $fontSize*0.7; #Shrink a maximum of 30%
             my $maxShrinkIterations = $fontSize - $minFontSize;
-            ($cuttingPos, $line) = _fitText(($width*2-$fontSize/2), $fontSize, $text); #Measure if we can fit this into two rows
+            ($cuttingPos, $line, undef) = _fitText(($width*2-$fontSize/2), $fontSize, $text); #Measure if we can fit this into two rows
             while($cuttingPos && $i++ < $maxShrinkIterations) {
                 ($fontSize, undef) = prFontSize( $fontSize-1 ); #Shrink the font to take less space
-                ($cuttingPos, $line) = _fitText(($width*2-$fontSize/2), $fontSize, $text);
+                ($cuttingPos, $line, undef) = _fitText(($width*2-$fontSize/2), $fontSize, $text);
             }
 
             ##Push first row
-            ($cuttingPos, $line) = _fitText($width, $fontSize, $text);
+            ($cuttingPos, $line, undef) = _fitText($width, $fontSize, $text);
             push(@lines, $line);
             if ($cuttingPos) { ##Push second row
-                $line = _fitText(  $width, $fontSize, substr($text, $cuttingPos)  ); #Cut the second row text from the first row text
+                (undef, $line, undef) = _fitText(  $width, $fontSize, substr($text, $cuttingPos)  ); #Cut the second row text from the first row text
                 push(@lines, $line);
             }
         }
@@ -296,7 +296,7 @@ sub _printLines {
 }
 
 =head _fitText()
-my ($shorteningPosition, $shortenedText) = _fitText($availableWidth, $fontSize, $text);
+my ($shorteningPosition, $shortenedText, $freeSpace) = _fitText($availableWidth, $fontSize, $text);
 
 Shortens the given $text to fit the given $availableWidth.
 Returns the $shortenedText and the length of the new text so we know the point of cutting.

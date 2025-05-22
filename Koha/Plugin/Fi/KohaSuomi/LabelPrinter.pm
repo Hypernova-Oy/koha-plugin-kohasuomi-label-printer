@@ -26,8 +26,8 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
-our $DATE_UPDATED = '2025-04-17'; #PLACEHOLDER
-our $VERSION = "24.11.01"; #PLACEHOLDER
+our $DATE_UPDATED = '2025-05-22'; #PLACEHOLDER
+our $VERSION = "24.11.3"; #PLACEHOLDER
 our $MINIMUM_VERSION = "24.11.00.000";
 
 ## Here is our metadata, some keys are required, some are optional

@@ -109,7 +109,7 @@ Set the grid size for the sheet.
 
 sub setGrid {
     my ($self, $grid) = @_;
-    if ($grid) {
+    if ($grid && $grid > 0) {
         unless ($grid =~ /^\d+\.?\d*$/) {
             Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'grid' is missing or is not a float");
         }

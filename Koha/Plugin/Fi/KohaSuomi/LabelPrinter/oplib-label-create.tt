@@ -148,6 +148,21 @@
                     </li>
                     <li>
                       <input type="text" size="15" id="sc_dataSource" placeholder="Data source"/>
+                      <i class="fa fa-info-circle" aria-hidden="true" onclick="$('label[for=sc_dataSource]').toggle()"></i>
+                      <label for="sc_dataSource" style="display: none;">
+                        <div class="dsfd-doc" id="dsfd-dataSource">
+                          This is either:
+                          <ul>
+                            <li>a Koha database table.column (eg. item.barcode),</li>
+                            <li>a MARC Record Field$subfield (eg. 245$a),</li>
+                            <li>or a static text (eg. "This is text").</li>
+                          </ul>
+                          These can be combined with or-statements. Eg.
+                          <ul>
+                            <li>245$a or 245$b or biblio.title or "Title not found"</li>
+                          </ul>
+                        </div>
+                      </label>
                     </li>
                     <li>
                       <input type="text" size="15" id="sc_customAttr" placeholder="Custom attributes"/>

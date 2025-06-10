@@ -26,6 +26,8 @@ use C4::Context;
 use Koha::DateUtils qw( dt_from_string output_pref );
 use Koha::Exceptions;
 
+use parent qw(Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasDimensions Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasPosition);
+
 sub new {
     my ($class, $params) = @_;
 
@@ -33,9 +35,10 @@ sub new {
     bless($self, $class);
     $self->setName($params->{name});
     $self->setId($params->{id});
-    $self->setDpi($params->{dpi});
+    $self->setSchema($params->{schema});
     $self->setGrid($params->{grid});
     $self->setDimensions($params->{dimensions});
+    $self->setPosition();
     $self->setVersion($params->{version});
     $self->setAuthor($params->{author});
     $self->setTimestamp($params->{timestamp});
@@ -63,10 +66,10 @@ sub toHash {
     my ($self) = @_;
     my $obj = {};
     $obj->{id} = $self->getId();
-    $obj->{dpi} = $self->getDpi();
+    $obj->{schema} = $self->getSchema();
     $obj->{grid} = $self->getGrid();
     $obj->{name} = $self->getName();
-    $obj->{dimensions} = $self->getDimensions();
+    $obj->{dimensions} = $self->getDimensions()->toHash();
     $obj->{version} = $self->getVersion();
     $obj->{author} = $self->getAuthor();
     $obj->{timestamp} = $self->getTimestamp()->iso8601();
@@ -86,19 +89,11 @@ sub setName {
     $self->{name} = $name;
 }
 sub getName { return shift->{name}; }
-sub setDpi {
-    my ($self, $dpi) = @_;
-    unless ($dpi =~ /^\d+$/) {
-        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dpi' is missing or is not a digit");
-    }
-    unless ($dpi > 0) {
-        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dpi' must be greater than 0");
-    }
-    $self->{dpi} = $dpi;
-    $self->{pdfDpi} = 100/$dpi;
+sub setSchema {
+    my ($self, $schema) = @_;
+    $self->{schema} = $schema;
 }
-sub getDpi { return shift->{dpi}; }
-sub getPdfDpi { return shift->{pdfDpi}; }
+sub getSchema { return shift->{schema}; }
 
 =head2 setGrid
 
@@ -120,8 +115,8 @@ sub setGrid {
     }
 }
 sub getGrid { return shift->{grid}; }
-sub getGridPdfWidth { my ($self) = @_; return $self->{grid} * $self->getPdfDpi(); }
-sub getGridPdfHeight { my ($self) = @_; return $self->{grid} * $self->getPdfDpi(); }
+sub getGridWidth { my ($self) = @_; return $self->{grid}; }
+sub getGridHeight { my ($self) = @_; return $self->{grid}; }
 sub setId {
     my ($self, $id) = @_;
     unless ($id =~ /^\d+$/) {
@@ -130,34 +125,11 @@ sub setId {
     $self->{id} = $id;
 }
 sub getId { return shift->{id}; }
-sub setDimensions {
-    my ($self, $dimensions) = @_;
-    unless ($dimensions && ref($dimensions) eq "HASH") {
-        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dimensions' is missing, or is not an object/hash");
-    }
-    unless ($dimensions->{width} =~ /^\d+\.?\d*$/ && $dimensions->{height} =~ /^\d+\.?\d*$/) {
-        Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dimensions' has bad width and/or height");
-    }
-    $self->{dimensions} = $dimensions;
+sub setPosition {
+    my ($self, $unused1, $unused2, $origo) = @_;
 
-    my $dpi = $self->getPdfDpi();
-    $self->{pdfDimensions} = {};
-    $self->{pdfDimensions}->{width} = $dpi * $dimensions->{width};
-    $self->{pdfDimensions}->{height} = $dpi * $dimensions->{height};
-}
-sub getDimensions { return shift->{dimensions}; }
-sub getPdfDimensions {return shift->{pdfDimensions}};
-sub setPdfPosition {
-    my ($self, $origo) = @_;
-
-    my $dpi = $self->getPdfDpi();
-    my $dimensions = $self->getPdfDimensions();
-    $self->{x} = $dpi * ($origo->[0] + 0);
-    $self->{y} = $dpi * ($dimensions->{height} + $origo->[1]);
-}
-sub getPdfPosition {
-    my ($self) = @_;
-    return {x => $self->{x}, y => $self->{y}};
+    my $dimensions = $self->getDimensions();
+    $self->SUPER::setPosition({left => 0, top => $dimensions->{height}}, $unused2, $origo);
 }
 sub setVersion {
     my ($self, $version) = @_;
@@ -231,5 +203,22 @@ sub getRegionById {
     }
     return undef;
 }
+sub setOrigo {
+    my ($self, $margins) = @_;
+    $self->{origo} = [$margins->{left}, $margins->{top}];
+
+    $self->setPosition(undef, undef, $self->getOrigo());
+
+    foreach my $item (@{$self->{items}}) {
+        foreach my $region (@{$item->{regions}}) {
+            $region->setPosition($region->getPosition(), $self);
+
+            foreach my $element (@{$region->{elements}}) {
+                $element->setPosition($element->getPosition(), $region);
+            }
+        }
+    }
+}
+sub getOrigo { return $_[0]->{origo}; }
 
 return 1;

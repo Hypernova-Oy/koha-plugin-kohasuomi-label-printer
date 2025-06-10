@@ -19,6 +19,8 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager;
 use Modern::Perl;
 
 use DateTime;
+use DBI qw( :sql_types );
+use JSON::XS;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet;
@@ -247,6 +249,28 @@ sub _updateToDB {
         Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB->throw(error => $cal[3].'():>'.($@ || $sth->errstr));
     }
     return $sheet;
+}
+sub _updateSheetJSONToDB {
+    my ($plugin, $id, $version, $sheetJSON) = @_;
+    if (ref($sheetJSON) eq 'HASH') {
+        $sheetJSON = JSON::XS->new()->encode($sheetJSON);
+    }
+
+    my $dbh = C4::Context->dbh();
+
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
+    my $sth = $dbh->prepare("UPDATE $label_table SET sheet = ? WHERE id = ? AND version = ?");
+    eval {
+        $sth->bind_param(1, $sheetJSON, SQL_VARCHAR);
+        $sth->bind_param(2, $id, SQL_INTEGER);
+        $sth->bind_param(3, $version, SQL_DOUBLE);
+        $sth->execute();
+    };
+    if ($@ || $sth->err) {
+        my @cal = caller(0);
+        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB->throw(error => $cal[3].'():>'.($@ || $sth->errstr));
+    }
+    return 1;
 }
 sub selectMaxIdFromDB {
     my $dbh = C4::Context->dbh();

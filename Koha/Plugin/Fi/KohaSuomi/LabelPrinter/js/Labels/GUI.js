@@ -31,8 +31,10 @@ Labels.GUI.cloneOrCopyActiveRegion = function (doClone) {
     var firstUnusedItem = $( "#regionsDispenser" ).find(".staged").text();
 
     targetOffset = cloningSource.offset();
-    targetOffset.top += (+Labels.GUI.mmToPx($('#CopyOffsetYMM').val() || 10));
-    targetOffset.left += (+Labels.GUI.mmToPx($('#CopyOffsetXMM').val() || 10));
+    let offsetY = Labels.GUI.mmToPx($('#CopyOffsetYMM').val());
+    targetOffset.top += (offsetY !== "" ? +offsetY : 10);
+    let offsetX = Labels.GUI.mmToPx($('#CopyOffsetXMM').val());
+    targetOffset.left += (offsetX !== "" ? +offsetX : 10);
 
     if(! NextItemId > 0) {
         alert(message.find(".number-missing").text());
@@ -43,6 +45,7 @@ Labels.GUI.cloneOrCopyActiveRegion = function (doClone) {
         var sheet = Labels.Sheets.getSheet(Labels.GUI.activeSheetId);
         var sourceRegion = Labels.Regions.getRegion(sourceRegionid);
         var regionJSON = sourceRegion.toJSON();
+        regionJSON.id = null;
         if (doClone) {
             regionJSON = {
                 cloneOfId: sourceRegionid,
@@ -68,7 +71,7 @@ Labels.GUI.getActive = function () {
 Labels.GUI.reorientOffsetToParent = function (parent, element, offset) {
     var newpos = Labels.GUI.reorientOffset( $(parent).offset(), offset );
 
-    element.css({"top": newpos.top, "left": newpos.left});
+    element.css({"top": newpos.top+"mm", "left": newpos.left+"mm"});
 }
 Labels.GUI.reorientOffset = function (offset1, offset2) {
     var newpos = {};
@@ -80,20 +83,35 @@ Labels.GUI.reorientOffset = function (offset1, offset2) {
     if (newpos.top < 0) {
         newpos.top = newpos.top * -1;
     }
+    newpos.left = Labels.GUI.pxToMm(newpos.left);
+    newpos.top = Labels.GUI.pxToMm(newpos.top);
     return newpos;
 }
 Labels.GUI.pxToMm = function (pixels) {
-    var sheet = Labels.Sheets.getActiveSheet();
-    var dpmm = sheet.dpi / 25.4; //Calculate dpi to dpmm
-    return (parseFloat(pixels)/dpmm).toFixed(1);
+    return (parseFloat(pixels) / 96 * 25.4).toFixed(2);
 }
 Labels.GUI.mmToPx = function (mm) {
-    var sheet = Labels.Sheets.getActiveSheet();
-    var dpmm = sheet.dpi / 25.4; //Calculate dpi to dpmm
-    return (parseFloat(mm) * dpmm).toFixed(1);
+    return (parseFloat(mm) * 96 / 25.4).toFixed(2);
 }
 Labels.GUI.pxTrim = function (cssString) {
-    return cssString.replace(/px$/g, "");
+    return parseFloat(cssString.replace(/px$/g, ""));
+}
+Labels.GUI.mmTrim = function (cssString) {
+    return parseFloat(cssString.replace(/mm$/g, ""));
+}
+Labels.GUI.asMm = function (cssString) {
+    if (cssString.endsWith("px")) {
+        return Labels.GUI.pxToMm(Labels.GUI.pxTrim(cssString)) + "mm";
+    }
+    else if (cssString.endsWith("mm")) {
+        return Labels.GUI.mmTrim(cssString) + "mm";
+    }
+    else if (typeof cssString === 'number') {
+        return cssString;
+    }
+    else {
+        throw new Error("Labels.GUI.asMm():> cssString must end with 'px' or 'mm', but was: "+cssString);
+    }
 }
 Labels.GUI.NextItemId = null;
 Labels.GUI.init = function (sheet) {
@@ -306,7 +324,7 @@ Labels.GUI.Controls.displaySheetControls = function (sheet) {
     }
     $("#sc_grid").parent().show();
     if (sheet.grid) {
-        $("#sc_grid").val( Labels.GUI.pxToMm(sheet.grid) );
+        $("#sc_grid").val(sheet.grid);
     }
     else {
         $("#sc_grid").val("0");
@@ -689,10 +707,10 @@ Labels.GUI.Tooltip = function (parentElem, params) {
         htmlElem.children("input").change(function (event) {
             var object = Labels.GUI.getActive();
             var dim = {}; var pos = {};
-            pos.left   = Labels.GUI.mmToPx(  $("#sc_left").val()    );
-            pos.top    = Labels.GUI.mmToPx(  $("#sc_top").val()     );
-            dim.width  = Labels.GUI.mmToPx(  $("#sc_width").val()   );
-            dim.height = Labels.GUI.mmToPx(  $("#sc_height").val()  );
+            pos.left   = $("#sc_left").val();
+            pos.top    = $("#sc_top").val();
+            dim.width  = $("#sc_width").val();
+            dim.height = $("#sc_height").val();
             object.setSpacings( dim, pos );
 
             self._recalculateInputWidth();
@@ -712,19 +730,34 @@ Labels.GUI.Tooltip = function (parentElem, params) {
         }
     };
     this._handleResizeEvent = function (publisher, data, event) {
-        var posDim = publisher.htmlElem.css(['left','top','width','height']);
-        $("#sc_left").val(  Labels.GUI.pxToMm(posDim.left)  );
-        $("#sc_top").val(  Labels.GUI.pxToMm(posDim.top)  );
-        $("#sc_width").val(  Labels.GUI.pxToMm(posDim.width)  );
-        $("#sc_height").val(  Labels.GUI.pxToMm(posDim.height)  );
-        this._recalculateInputWidth();
-    }
-    this._recalculateInputWidth = function () {
-        this.htmlElem.find('input[type="number"]').each(function (index, element) {
-            var e = $(element);
-            var length = String(e.val()).length;
-            /*e.css("width", (15+length*6)+"px");*/
-        });
+        let e = publisher.htmlElem[0];
+        if (e.style.left && e.style.left.endsWith("px")) {
+            $("#sc_left").val(Labels.GUI.pxToMm(Labels.GUI.pxTrim(e.style.left)));
+        }
+        else {
+            $("#sc_left").val(Labels.GUI.mmTrim(e.style.left));
+        }
+
+        if (e.style.top && e.style.top.endsWith("px")) {
+            $("#sc_top").val(Labels.GUI.pxToMm(Labels.GUI.pxTrim(e.style.top)));
+        }
+        else {
+            $("#sc_top").val(Labels.GUI.mmTrim(e.style.top));
+        }
+
+        if (e.style.width && e.style.width.endsWith("px")) {
+            $("#sc_width").val(Labels.GUI.pxToMm(Labels.GUI.pxTrim(e.style.width)));
+        }
+        else {
+            $("#sc_width").val(Labels.GUI.mmTrim(e.style.width));
+        }
+
+        if (e.style.height && e.style.height.endsWith("px")) {
+            $("#sc_height").val(Labels.GUI.pxToMm(Labels.GUI.pxTrim(e.style.height)));
+        }
+        else {
+            $("#sc_height").val(Labels.GUI.mmTrim(e.style.height));
+        }
     }
 
     this.htmlElem = this._template();

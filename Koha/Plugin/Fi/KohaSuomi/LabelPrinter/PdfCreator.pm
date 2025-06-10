@@ -30,8 +30,12 @@ use Koha::Exceptions;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfUtil qw(mm2p);
+
 use Koha::Logger;
+use Log::Log4perl::Level;
 our $log = Koha::Logger->get({category => __PACKAGE__});
+$log->{logger}->level($DEBUG);
 
 =head new
 
@@ -77,9 +81,8 @@ sub create {
     $self->setMediaBoxFromSheet($sheet);
     ($self->{fontSize}, $self->{fontSizeOld}) = prFontSize(12);
     $self->{font} = getTTFont();
-    $self->setOrigo();
 
-    $sheet->setPdfPosition($self->getOrigo());
+    $sheet->setOrigo($self->getMargins());
     $self->printBoundingBox($sheet);
     $self->printGrid($sheet) if $sheet->getGrid();
 
@@ -122,10 +125,8 @@ sub _createRegion {
         }
     }
 
-    $region->setPdfPosition($self->getOrigo());
     $self->printBoundingBox($region);
     foreach my $element (@{$region->{elements}}) {
-        $element->setPdfPosition($self->getOrigo());
         $self->printBoundingBox($element);
         $self->printElement($element, $barcode);
     }
@@ -148,10 +149,10 @@ sub setMediaBoxFromSheet {
         Koha::Exceptions::BadParameter->throw(error => $cc[0]."():> Param \$sheet '$sheet' is not a proper Sheet-object!");
     }
     my @pos = (
-        0,
-        0,
-        $sheet->getPdfDimensions()->{width} + $self->getMargins()->{left} + $self->getMargins()->{right},
-        $sheet->getPdfDimensions()->{height} + $self->getMargins()->{top} + $self->getMargins()->{bottom},
+        mm2p(0),
+        mm2p(0),
+        mm2p($sheet->getDimensions()->{width} + $self->getMargins()->{left} + $self->getMargins()->{right}),
+        mm2p($sheet->getDimensions()->{height} + $self->getMargins()->{top} + $self->getMargins()->{bottom}),
     );
     $log->debug("Setting MediaBox as '@pos'") if $log->is_debug;
     prMbox(@pos);
@@ -161,7 +162,12 @@ sub printBoundingBox {
     my ($self, $object) = @_;
     if ($object->getBoundingBox()) {
         my $pos = $object->getPdfPosition();
-        my @pos = ($pos->{x}, $pos->{y}, $object->getPdfDimensions()->{width}, $object->getPdfDimensions()->{height});
+        my @pos = (
+            $pos->{x},
+            $pos->{y},
+            $object->getPdfDimensions()->{width},
+            $object->getPdfDimensions()->{height},
+        );
         $log->debug("Bounding box at '".join(', ',@pos)."'") if $log->is_debug;
         prAdd(_box(@pos));
     }
@@ -186,23 +192,18 @@ sub printGrid {
     my ($self, $sheet) = @_;
     my $sheetWidth = $sheet->getPdfDimensions()->{width};
     my $sheetHeight = $sheet->getPdfDimensions()->{height};
-    my $origo = $self->getOrigo();
-    my $x = $origo->[0];
-    my $y = $sheetHeight + $origo->[1];
+    my $origo = $sheet->getOrigo();
+    my $x = mm2p($origo->[0]);
+    my $y = mm2p($sheetHeight + $origo->[1]);
+    my $gridWidth = mm2p($sheet->getGridWidth());
+    my $gridHeight = mm2p($sheet->getGridHeight());
 
-    my $obj_stream = "q\n";                            # save the graphic state
-    $obj_stream .= "0.1 w\n";                         # border line width
-    $obj_stream .= "1.0 0.0 0.0  RG\n";                # border color red
-    for (my $i=0 ; $i<$sheetWidth ; $i+=$sheet->getGridPdfWidth()) {
-        $obj_stream .= ($x+$i)." ".(0)." m\n";
-        $obj_stream .= ($x+$i)." ".($y)." l\n";
+    for (my $i=0 ; $i<$sheetWidth ; $i+=$gridWidth) {
+        _line(($x+$i), 0, ($x+$i), ($y));
     }
-    for (my $i=0 ; $i<$sheetHeight ; $i+=$sheet->getGridPdfHeight()) {
-        $obj_stream .= (0)." ".($y-$i)." m\n";
-        $obj_stream .= ($sheetWidth)." ".($y-$i)." l\n";
+    for (my $i=0 ; $i<$sheetHeight ; $i+=$gridHeight) {
+        _line(0, ($y-$i), ($sheetWidth), ($y-$i));
     }
-    $obj_stream .= "Q\n";                              # restore the graphic state
-    prAdd($obj_stream);
 }
 
 =head _fitText()
@@ -247,6 +248,17 @@ sub _box {
     $obj_stream .= "Q\n";                              # restore the graphic state
     return $obj_stream;
 }
+sub _line {
+    my ($x1, $y1, $x2, $y2) = @_;
+    my $obj_stream = "q\n";               # save the graphic state
+    $obj_stream .= "0.5 w\n";             # border line width
+    $obj_stream .= "1.0 0.0 0.0  RG\n";   # stroke color red
+    $obj_stream .= "$x1 $y1 m\n";         # move to
+    $obj_stream .= "$x2 $y2 l\n";         # line to
+    $obj_stream .= "S\n";                 # stroke
+    $obj_stream .= "Q\n";                 # restore the graphic state
+    prAdd($obj_stream);
+}
 sub getTTFont {
     my $fontName = shift || 'TR'; #DejaVuSerif.ttf
     my $ttf = C4::Context->config('ttf') or Koha::Exceptions::ObjectNotFound->throw(error => __PACKAGE__.":: No TrueType-font configured!");
@@ -256,22 +268,6 @@ sub getTTFont {
     } else {
         Koha::Exceptions::ObjectNotFound->throw(error => __PACKAGE__.":: ERROR in koha-conf.xml -- missing <font type=\"$fontName\">/path/to/font.ttf</font>");
     }
-}
-sub getPos {
-    my ($self, $position) = @_;
-    my $sheetHeight = $self->getSheet()->getHeight();
-    my $origo = $self->getOrigo();
-    my $x = $origo->[0] + $position->{left};
-    my $y = $sheetHeight + $origo->[1] - $position->{top};
-    return [$x, $y];
-}
-sub setOrigo {
-    my ($self) = @_;
-    my $margins = $self->getMargins();
-    $self->{origo} = [$margins->{left}, $margins->{top}];
-}
-sub getOrigo {
-    return shift->{origo};
 }
 sub setSheet {
     my ($self, $sheet) = @_;

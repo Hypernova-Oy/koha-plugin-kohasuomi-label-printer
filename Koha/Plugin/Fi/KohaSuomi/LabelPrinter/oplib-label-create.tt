@@ -57,22 +57,22 @@
                         </label>
                         <textarea rows="30" cols="20" id="barcodes" tabindex="1" class="focus">[% barcodesTextArea %]</textarea>
                         </li><li>
-                            <label for="leftMargin">Left margin
-                                <br /> <span class="hint">Divide the margin value by 4 to get the millimeters.</span>
+                            <label for="leftMargin">Left margin (mm)
+                                <br /> <span class="hint">Margins are defined in millimetres.</span>
                             </label>
                             <input type="number" id="leftMargin" name="leftMargin" size="3" min="-20" max="20" require [% IF margins.left %] value="[% margins.left %]" [% END %] />
                         </li><li>
-                            <label for="topMargin">Top margin
-                                <br /> <span class="hint">Margins should be between -20 and 20.</span>
+                            <label for="topMargin">Top margin (mm)
+                                <br /> <span class="hint">Margins should be between -5 and 5.</span>
                             </label>
                             <input type="number" id="topMargin" name="topMargin" size="3" min="-20" max="20" require [% IF margins.top %] value="[% margins.top %]" [% END %] />
                         </li><li>
-                            <label for="bottomMargin">Bottom margin
+                            <label for="bottomMargin">Bottom margin (mm)
                                 <br /> <span class="hint">But typically 0 should be used.</span>
                             </label>
                             <input type="number" id="bottomMargin" name="bottomMargin" size="3" min="-20" max="20" require [% IF margins.bottom %] value="[% margins.bottom %]" [% END %] />
                         </li><li>
-                            <label for="rightMargin">Right margin
+                            <label for="rightMargin">Right margin (mm)
                                 <br /> <span class="hint">Custom margins might help with different printer settings.</span>
                             </label>
                             <input type="number" id="rightMargin" name="rightMargin" size="3" min="-20" max="20" require [% IF margins.right %] value="[% margins.right %]" [% END %] />

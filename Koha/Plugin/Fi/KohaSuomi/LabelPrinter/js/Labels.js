@@ -188,6 +188,8 @@ Labels.Sheet = function(parentElem, params) {
     this.id = parseInt(params.id || Labels.Sheets.getNewId()).toString();
     this.grid = params.grid || 0;
     this.version = params.version || 0.0;
+    this.schema = parseFloat(params.schema) || 1;
+    //if (!this.schema) throw new Error(`Sheet ${this.name} is missing schema version!`);
     this.author = params.author || loggedinuser;
     this.timestamp = params.timestamp || new Date().toISOString();
     this.boundingBox = (params.boundingBox == "true" || params.boundingBox == true) ? true : false;
@@ -235,8 +237,8 @@ Labels.Sheet = function(parentElem, params) {
         $(this.parentElem).remove( this.htmlElem.attr("id") );
     }
     this.refreshSpacings = function () {
-        this.dimensions.width  = Labels.GUI.pxTrim($(this.htmlElem).css("width"));
-        this.dimensions.height = Labels.GUI.pxTrim($(this.htmlElem).css("height"));
+        this.dimensions.width  = Labels.GUI.asMm($(this.htmlElem).css("width"));
+        this.dimensions.height = Labels.GUI.asMm($(this.htmlElem).css("height"));
     }
     this.getSheet = function () {
         return this;
@@ -268,7 +270,7 @@ Labels.Sheet = function(parentElem, params) {
         Labels.GUI.sheetlist.setSheetListAuthor(this.id, this.author.userid);
     }
     this.setGrid = function (newGridMm) {
-        this.grid = Labels.GUI.mmToPx(newGridMm);
+        this.grid = newGridMm;
     }
     this.setVersion = function (newVersion) {
         this.version = newVersion;
@@ -279,10 +281,10 @@ Labels.Sheet = function(parentElem, params) {
             dim = {};
         }
         if (dim.width) {
-            this.htmlElem.css("width", dim.width+"px");
+            this.htmlElem.css("width", dim.width+"mm");
         }
         if (dim.height) {
-            this.htmlElem.css("height",dim.height+"px");
+            this.htmlElem.css("height",dim.height+"mm");
         }
         this.dimensions = dim;
     }
@@ -299,6 +301,7 @@ Labels.Sheet = function(parentElem, params) {
         me.dimensions.width  = parseFloat(this.dimensions.width);
         me.dimensions.height = parseFloat(this.dimensions.height);
         me.version = this.version;
+        me.schema = this.schema;
         me.author = {};
         me.author.userid = this.author.userid;
         me.author.borrowernumber = this.author.borrowernumber;
@@ -438,10 +441,10 @@ Labels.Region = function(item, params) {
     this.htmlElem = Labels.Regions.createHtmlElement(this, this.item);
 
     this.refreshSpacings = function () {
-        this.dimensions.width  = Labels.GUI.pxTrim($(this.htmlElem).css("width"));
-        this.dimensions.height = Labels.GUI.pxTrim($(this.htmlElem).css("height"));
-        this.position.left     = Labels.GUI.pxTrim($(this.htmlElem).css("left"));
-        this.position.top      = Labels.GUI.pxTrim($(this.htmlElem).css("top"));
+        this.dimensions.width  = Labels.GUI.asMm($(this.htmlElem).css("width"));
+        this.dimensions.height = Labels.GUI.asMm($(this.htmlElem).css("height"));
+        this.position.left     = Labels.GUI.asMm($(this.htmlElem).css("left"));
+        this.position.top      = Labels.GUI.asMm($(this.htmlElem).css("top"));
 
         this.setDimensions(this.dimensions);
     }
@@ -470,10 +473,10 @@ Labels.Region = function(item, params) {
             dim = {};
         }
         if (dim.width) {
-            this.htmlElem.css("width", dim.width+"px");
+            this.htmlElem.css("width", dim.width+"mm");
         }
         if (dim.height) {
-            this.htmlElem.css("height",dim.height+"px");
+            this.htmlElem.css("height",dim.height+"mm");
         }
         this.dimensions = dim;
 
@@ -485,8 +488,8 @@ Labels.Region = function(item, params) {
         if (!pos) {
             pos = {top: 0, left: 0};
         }
-        this.htmlElem.css("top", pos.top+"px");
-        this.htmlElem.css("left",pos.left+"px");
+        this.htmlElem.css("top", pos.top+"mm");
+        this.htmlElem.css("left",pos.left+"mm");
         this.position = pos;
     }
     this.setSpacings = function (dim, pos) {
@@ -622,10 +625,10 @@ Labels.Element = function(region, params) {
     this.htmlElem = Labels.Elements.createHtmlElement(this);
 
     this.refreshSpacings = function () {
-        this.dimensions.width  = Labels.GUI.pxTrim($(this.htmlElem).css("width"));
-        this.dimensions.height = Labels.GUI.pxTrim($(this.htmlElem).css("height"));
-        this.position.left     = Labels.GUI.pxTrim($(this.htmlElem).css("left"));
-        this.position.top      = Labels.GUI.pxTrim($(this.htmlElem).css("top"));
+        this.dimensions.width  = Labels.GUI.asMm($(this.htmlElem).css("width"));
+        this.dimensions.height = Labels.GUI.asMm($(this.htmlElem).css("height"));
+        this.position.left     = Labels.GUI.asMm($(this.htmlElem).css("left"));
+        this.position.top      = Labels.GUI.asMm($(this.htmlElem).css("top"));
     }
     this.remove = function () {
         this.htmlElem.remove();
@@ -664,10 +667,10 @@ Labels.Element = function(region, params) {
             dim = {};
         }
         if (dim.width) {
-            this.htmlElem.css("width", dim.width+"px");
+            this.htmlElem.css("width", dim.width+"mm");
         }
         if (dim.height) {
-            this.htmlElem.css("height",dim.height+"px");
+            this.htmlElem.css("height",dim.height+"mm");
         }
         this.dimensions = dim;
     }
@@ -675,8 +678,8 @@ Labels.Element = function(region, params) {
         if (!pos) {
             pos = {top: 0, left: 0};
         }
-        this.htmlElem.css("top", pos.top+"px");
-        this.htmlElem.css("left",pos.left+"px");
+        this.htmlElem.css("top", pos.top+"mm");
+        this.htmlElem.css("left",pos.left+"mm");
         this.position = pos;
     }
     this.setSpacings = function (dim, pos) {

@@ -25,6 +25,8 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Fonts;
 
 use Koha::Exceptions;
 
+use parent qw(Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasDimensions Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasPosition);
+
 sub new {
     my ($class, $region, $params) = @_;
 
@@ -33,7 +35,7 @@ sub new {
     $self->setId(         $params->{id});
     $self->setParent(     $region);
     $self->setDimensions( $params->{dimensions});
-    $self->setPosition(   $params->{position});
+    $self->setPosition(   $params->{position}, $region);
     $self->setBoundingBox($params->{boundingBox});
     $self->setDataSource( $params->{dataSource});
     $self->setDataFormat( $params->{dataFormat});
@@ -46,8 +48,8 @@ sub new {
 sub toHash {
     my ($self) = @_;
     my $obj = {};
-    $obj->{dimensions} =  $self->getDimensions();
-    $obj->{position} =    $self->getPosition();
+    $obj->{dimensions} =  $self->getDimensions()->toHash();
+    $obj->{position} =    $self->getPosition()->toHash();
     $obj->{boundingBox} = ($self->getBoundingBox() == 1) ? 'true' : 'false';
     $obj->{dataSource} =  $self->getDataSource();
     $obj->{dataFormat} =  $self->getDataFormat();
@@ -66,51 +68,6 @@ sub setId {
     $self->{id} = $id;
 }
 sub getId { return shift->{id}; }
-sub setDimensions {
-    my ($self, $dimensions) = @_;
-    unless ($dimensions && ref($dimensions) eq "HASH") {
-        my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'dimensions' is missing, or is not an object/hash ".$self->_exceptionId());
-    }
-    unless ($dimensions->{width} =~ /^\d+\.?\d*$/ && $dimensions->{height} =~ /^\d+\.?\d*$/) {
-        my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'dimensions' has bad width and/or height ".$self->_exceptionId());
-    }
-    $self->{dimensions} = $dimensions;
-
-    my $dpi = $self->getSheet()->getPdfDpi();
-    $self->{pdfDimensions} = {};
-    $self->{pdfDimensions}->{width} = $dpi * $dimensions->{width};
-    $self->{pdfDimensions}->{height} = $dpi * $dimensions->{height};
-}
-sub getDimensions { return shift->{dimensions}; }
-sub getPdfDimensions {return shift->{pdfDimensions}};
-sub setPosition {
-    my ($self, $position) = @_;
-    unless ($position && ref($position) eq "HASH") {
-        my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'position' is missing, or is not an object/hash ".$self->_exceptionId());
-    }
-    unless ($position->{left} =~ /^-?\d+\.?\d*$/ && $position->{top} =~ /^-?\d+\.?\d*$/) {
-        my @cc = caller(0);
-        Koha::Exceptions::BadParameter->throw(error => $cc[3]."() Parameter 'position' has bad 'left' and/or 'top' ".$self->_exceptionId());
-    }
-    $self->{position} = $position;
-}
-sub getPosition { return shift->{position}; }
-sub setPdfPosition {
-    my ($self, $origo) = @_;
-    my $regionPos = $self->getParent()->getPdfPosition();
-    my $dpi = $self->getSheet()->getPdfDpi();
-    my $cssPosition = $self->getPosition();
-
-    $self->{x} = $regionPos->{x} + ($dpi * $cssPosition->{left});
-    $self->{y} = $regionPos->{y} - ($dpi * $cssPosition->{top});
-}
-sub getPdfPosition {
-    my ($self) = @_;
-    return {x => $self->{x}, y => $self->{y}};
-}
 sub setBoundingBox {
     my ($self, $boundingBox) = @_;
     unless ($boundingBox =~ /^(1|0|true|false)$/) {

@@ -28,6 +28,7 @@ use Modern::Perl;
 use strict;
 use warnings;
 use utf8;
+use version;
 
 use JSON::XS;
 use PDF::Reuse;
@@ -38,6 +39,7 @@ use Test::Deep;
 use t::Lib;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter;
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade;
 
 $Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator::log->level('TRACE');
 
@@ -47,9 +49,23 @@ $schema->storage->txn_begin;
 my $testFile = '/tmp/test.pdf';
 
 my $testBarcodes = [
-  'SAO00105858',
-  '0103013605',
+  '26901',
+  '26901',
 ];
+
+subtest("Scenario: Upgrade plugin", sub {
+  plan tests => 3;
+
+  my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new(); #This implicitly calls install() and upgrade(), but those do nothing since there should be no upgrade as this is a new plugin.
+  $plugin->store_data({'__INSTALLED_VERSION__' => '24.04.1'});
+  my $installedVersion = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::_getInstalledVersion($plugin);
+  is($installedVersion, '0.0.1', "Plugin installed version is set from legacy versioning 24.04.1 to 0.0.1");
+  Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgrade($plugin, {});
+  ok(version->parse(Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::_getInstalledVersion($plugin))
+     >= version->parse('0.0.4'),
+     "Plugin installed version is set after upgrade");
+  ok($Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgradesDone{'0.0.4'}, "Upgrade 0.0.4 was done");
+});
 
 subtest("Scenario: Render the sheet #2.", sub {
   my ($plugin, $margins, $sheet, $barcodes, $creator, $filePath);
@@ -140,7 +156,6 @@ subtest("Scenario: DataSourceFormatter.", sub {
 
     ok($element = $sheet->getRegionById(43)->getElements()->[1], "Given an Element");
     ok($element->getCustomAttr->{center}, "With center custom attribute");
-$DB::single=1;
     ($pdfPos, $lines, $fontSize, $font, $colour) = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceFormatter::_formatLines(
       $element,
       $element->getDataSource(),

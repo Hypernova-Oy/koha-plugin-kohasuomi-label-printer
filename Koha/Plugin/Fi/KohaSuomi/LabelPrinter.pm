@@ -7,8 +7,6 @@ use base qw( Koha::Plugins::Base );
 use C4::Context;
 use C4::Output qw( output_html_with_http_headers );
 
-use Koha::DateUtils qw( dt_from_string );
-
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Fonts;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
@@ -26,8 +24,8 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
-our $DATE_UPDATED = '2025-05-22'; #PLACEHOLDER
-our $VERSION = '0.0.1'; #PLACEHOLDER
+our $DATE_UPDATED = '2025-06-09'; #PLACEHOLDER
+our $VERSION = '0.0.3'; #PLACEHOLDER
 our $MINIMUM_VERSION = "24.11.00.000";
 
 ## Here is our metadata, some keys are required, some are optional
@@ -201,28 +199,7 @@ sub install() {
 ## This is the 'upgrade' method. It will be triggered when a newer version of a
 ## plugin is installed over an existing older version of a plugin
 sub upgrade {
-    my ( $self, $args ) = @_;
-
-    my $table_label_sheets = $self->get_qualified_table_name('label_sheets');
-    my $table_print_list = $self->get_qualified_table_name('label_print_list');
-
-    my $dbh = C4::Context->dbh;
-    $dbh->do("
-        CREATE TABLE IF NOT EXISTS $table_print_list ( -- stores Items added to the print list, for easy printing
-            `id`   int(11) NOT NULL AUTO_INCREMENT,
-            `itemnumber` int(11) NOT NULL,
-            `borrowernumber` int(11) NOT NULL,
-            `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP, -- latest modification time
-            PRIMARY KEY  (`id`),
-            CONSTRAINT `labshetprlist_itemnumber` FOREIGN KEY (`itemnumber`) REFERENCES `items` (`itemnumber`) ON DELETE CASCADE ON UPDATE CASCADE,
-            CONSTRAINT `labshetprlist_borrowernumber` FOREIGN KEY (`borrowernumber`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE CASCADE ON UPDATE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-    ") or die($dbh->errstr());
-
-    my $dt = dt_from_string();
-    $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
-
-    return 1;
+    return Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgrade(@_);
 }
 
 ## This method will be run just before the plugin files are deleted

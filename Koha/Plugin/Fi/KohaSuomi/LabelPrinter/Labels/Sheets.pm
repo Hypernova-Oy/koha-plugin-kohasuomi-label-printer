@@ -17,7 +17,8 @@ sub list {
     my $c = shift->openapi->valid_input or return;
 
     return try {
-        my $sheetRows = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetsFromDB();
+        my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new;
+        my $sheetRows = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetsFromDB($plugin);
 
         if (@$sheetRows > 0) {
             my @sheets;
@@ -39,6 +40,7 @@ sub create {
     my $c = shift->openapi->valid_input or return;
 
     return try {
+        my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new;
         my $s = $c->validation->param('sheet');
         my $sheetHash = JSON::XS->new()->decode($s);
         my $user = $c->stash('koha.user');
@@ -47,7 +49,7 @@ sub create {
             'borrowernumber' => $user->borrowernumber,
         };
         my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet->new($sheetHash);
-        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::putNewSheetToDB($sheet);
+        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::putNewSheetToDB($plugin, $sheet);
         return $c->render(status => 201, openapi => $sheet->toJSON());
     } catch {
         if (blessed($_) && $_->isa('Koha::Exceptions::BadParameter')) {
@@ -65,10 +67,11 @@ sub update {
     my $c = shift->openapi->valid_input or return;
 
     return try {
+        my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new;
         my $s = $c->validation->param('sheet');
         my $sheetHash = JSON::XS->new()->decode($s);
         my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet->new($sheetHash);
-        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::putNewVersionToDB($sheet);
+        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::putNewVersionToDB($plugin, $sheet);
         return $c->render(status => 201, openapi => $sheet->toJSON());
     } catch {
         if (blessed($_) && $_->isa('Koha::Exceptions::BadParameter')) {
@@ -88,9 +91,10 @@ sub delete {
     my $c = shift->openapi->valid_input or return;
 
     return try {
+        my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new;
         my $id = $c->validation->param('sheet_identifier');
         my $version = $c->validation->param('sheet_version');
-        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::deleteSheet($id, $version);
+        Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::deleteSheet($plugin, $id, $version);
         return $c->render( status => 204, openapi => {});
     } catch {
         if (blessed($_) && $_->isa('Koha::Exceptions::ObjectNotFound')) {
@@ -107,9 +111,10 @@ sub get {
     my $c = shift->openapi->valid_input or return;
 
     return try {
+        my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new;
         my $id = $c->validation->param('sheet_identifier');
         my $version = $c->validation->param('sheet_version');
-        my $sheetRow = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetFromDB( $id, '', $version );
+        my $sheetRow = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetFromDB($plugin, $id, '', $version );
 
         if ($sheetRow) {
             return $c->render( status => 200, openapi => $sheetRow->{sheet});
@@ -168,7 +173,8 @@ sub list_sheet_versions {
     my $c = shift->openapi->valid_input or return;
 
     return try {
-        my $sheetMetaData = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::listSheetVersions();
+        my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new;
+        my $sheetMetaData = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::listSheetVersions($plugin);
         my @sheetMetaData = map {Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::swaggerizeSheetVersion($_)} @$sheetMetaData if ($sheetMetaData && ref($sheetMetaData) eq 'ARRAY');
 
         if (scalar(@sheetMetaData)) {

@@ -20,12 +20,13 @@ use Try::Tiny;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager;
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator;
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade;
 #use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
 our $DATE_UPDATED = '2025-06-09'; #PLACEHOLDER
-our $VERSION = '0.0.3'; #PLACEHOLDER
+our $VERSION = '24.11.04'; #PLACEHOLDER
 our $MINIMUM_VERSION = "24.11.00.000";
 
 ## Here is our metadata, some keys are required, some are optional
@@ -314,7 +315,7 @@ sub tool_step1 {
         my $file = 'printLabel'.strftime('%Y%m%d%H%M%S',localtime).'.pdf';
 
         try {
-            my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheet($sheetId);
+            my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheet($self, $sheetId);
             my $creator = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfCreator->new({margins => $margins, sheet => $sheet, file => $dir.$file});
             my $filePath = $creator->create($barcodes);
 

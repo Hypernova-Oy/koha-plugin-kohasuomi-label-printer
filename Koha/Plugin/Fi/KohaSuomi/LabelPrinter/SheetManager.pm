@@ -31,8 +31,8 @@ use Koha::DateUtils qw( dt_from_string output_pref );
 use Koha::Exceptions;
 
 sub getSheet {
-    my ($sheetId, $version) = @_;
-    return _instantiateSheet( getSheetFromDB($sheetId, undef, $version) );
+    my ($plugin, $sheetId, $version) = @_;
+    return _instantiateSheet( getSheetFromDB($plugin, $sheetId, undef, $version) );
 }
 
 =head getSheetByName
@@ -48,8 +48,8 @@ the most accurate representation of the sheet.
 =cut
 
 sub getSheetByName {
-    my ($name, $version) = @_;
-    return _instantiateSheet( getSheetFromDB(undef, $name, $version) );
+    my ($plugin, $name, $version) = @_;
+    return _instantiateSheet( getSheetFromDB($plugin, undef, $name, $version) );
 }
 
 sub _instantiateSheet {
@@ -67,9 +67,10 @@ sub _instantiateSheet {
 =cut
 
 sub listSheetVersions {
+    my ($plugin) = @_;
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
     my $sth = $dbh->prepare("SELECT id, name, version, author, timestamp FROM $label_table ORDER BY id ASC, version DESC");
     eval {
         $sth->execute();
@@ -109,9 +110,10 @@ sub swaggerizeSheetVersion {
 =cut
 
 sub getSheetsFromDB {
+    my ($plugin) = @_;
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
     my $sth = $dbh->prepare("SELECT * FROM $label_table lsa WHERE version = (SELECT MAX(version) as version FROM $label_table lsd WHERE lsa.id = lsd.id);");
     eval {
         $sth->execute();
@@ -130,10 +132,10 @@ sub getSheetsFromDB {
 =cut
 
 sub getSheetFromDB {
-    my ($id, $name, $version) = @_;
+    my ($plugin, $id, $name, $version) = @_;
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
 
     my @params;
     my $sql = "SELECT * FROM $label_table lsa WHERE ";
@@ -167,20 +169,20 @@ sub getSheetFromDB {
     return $sth->fetchrow_hashref();
 }
 sub putNewSheetToDB {
-    my ($sheet) = @_;
+    my ($plugin, $sheet) = @_;
 
     my $id = selectMaxIdFromDB()+1;
     $id = $sheet->getId() if $sheet->getId() > $id;
     $sheet->setId($id);
-    $sheet = _putToDB($sheet);
+    $sheet = _putToDB($plugin, $sheet);
 
     return $sheet;
 }
 sub putNewVersionToDB {
-    my ($sheet) = @_;
+    my ($plugin, $sheet) = @_;
 
     if (idInUseInDB($sheet->getId())) {
-        $sheet = _updateToDB($sheet);
+        $sheet = _updateToDB($plugin, $sheet);
     }
     else {
         my @cal = caller(0);
@@ -189,12 +191,12 @@ sub putNewVersionToDB {
     return $sheet;
 }
 sub deleteSheet {
-    my ($id, $version) = @_;
+    my ($plugin, $id, $version) = @_;
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
 
-    unless (my $oldSheet = getSheetFromDB($id, undef, $version)) {
+    unless (my $oldSheet = getSheetFromDB($plugin, $id, undef, $version)) {
         my @cal = caller(0);
         Koha::Exceptions::ObjectNotFound->throw(error => $cal[3].'():>'."Sheet not found");
     }
@@ -215,12 +217,12 @@ sub deleteSheet {
     return 1;
 }
 sub _putToDB {
-    my ($sheet) = @_;
+    my ($plugin, $sheet) = @_;
     $sheet->setTimestamp(DateTime->now(time_zone => C4::Context->tz()));
 
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
     my $sth = $dbh->prepare("INSERT INTO $label_table VALUES (?,?,?,?,?,?)");
     eval {
         $sth->execute( $sheet->getId(), $sheet->getName(), $sheet->getAuthor()->{borrowernumber},
@@ -233,12 +235,12 @@ sub _putToDB {
     return $sheet;
 }
 sub _updateToDB {
-    my ($sheet) = @_;
+    my ($plugin, $sheet) = @_;
     $sheet->setTimestamp(DateTime->now(time_zone => C4::Context->tz()));
 
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
     my $sth = $dbh->prepare("UPDATE $label_table SET name = ?, author = ?, version = ?, timestamp = ?, sheet = ? WHERE id = ?");
     eval {
         $sth->execute( $sheet->getName(), $sheet->getAuthor()->{borrowernumber},
@@ -273,9 +275,10 @@ sub _updateSheetJSONToDB {
     return 1;
 }
 sub selectMaxIdFromDB {
+    my ($plugin) = @_;
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
     my $sth = $dbh->prepare("SELECT max(id) as id FROM $label_table");
     eval {
         $sth->execute( );
@@ -288,10 +291,10 @@ sub selectMaxIdFromDB {
     return (ref $rv eq 'HASH' && $rv->{id}) ? $rv->{id} : 0;
 }
 sub idInUseInDB {
-    my ($id) = @_;
+    my ($plugin, $id) = @_;
     my $dbh = C4::Context->dbh();
 
-    my $label_table = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new->get_qualified_table_name('label_sheets');
+    my $label_table = $plugin->get_qualified_table_name('label_sheets');
     my $sth = $dbh->prepare("SELECT id FROM $label_table WHERE id = ?");
     eval {
         $sth->execute( $id );

@@ -35,7 +35,7 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfUtil qw(mm2p);
 use Koha::Logger;
 use Log::Log4perl::Level;
 our $log = Koha::Logger->get({category => __PACKAGE__});
-$log->{logger}->level($DEBUG);
+#$log->{logger}->level($DEBUG);
 
 =head new
 

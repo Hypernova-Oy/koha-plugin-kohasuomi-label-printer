@@ -54,17 +54,16 @@ my $testBarcodes = [
 ];
 
 subtest("Scenario: Upgrade plugin", sub {
-  plan tests => 3;
+  plan tests => 2;
 
   my $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new(); #This implicitly calls install() and upgrade(), but those do nothing since there should be no upgrade as this is a new plugin.
-  $plugin->store_data({'__INSTALLED_VERSION__' => '24.04.1'});
-  my $installedVersion = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::_getInstalledVersion($plugin);
-  is($installedVersion, '0.0.1', "Plugin installed version is set from legacy versioning 24.04.1 to 0.0.1");
-  Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgrade($plugin, {});
+  $plugin->store_data({'__INSTALLED_VERSION__' => '24.04.01'});
+  #Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgrade($plugin, {});
+  $plugin = Koha::Plugin::Fi::KohaSuomi::LabelPrinter->new(); #Trigger upgrade.
   ok(version->parse(Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::_getInstalledVersion($plugin))
-     >= version->parse('0.0.4'),
+     >= version->parse('24.11.04'),
      "Plugin installed version is set after upgrade");
-  ok($Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgradesDone{'0.0.4'}, "Upgrade 0.0.4 was done");
+  ok($Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade::upgradesDone{'24.11.04'}, "Upgrade 24.11.04 was done");
 });
 
 subtest("Scenario: Render the sheet #2.", sub {
@@ -82,7 +81,7 @@ subtest("Scenario: Render the sheet #2.", sub {
   };
   ok($margins, "Given margins");
 
-  $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheet(2);
+  $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheet($plugin, 3);
   ok($sheet, "And a Sheet");
 
   ok($barcodes, "And some barcodes");

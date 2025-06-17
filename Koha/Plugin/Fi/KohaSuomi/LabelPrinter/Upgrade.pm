@@ -4,6 +4,7 @@ use Modern::Perl;
 use strict;
 use warnings;
 use version;
+use Carp::Always;
 
 use C4::Context;
 use Koha::DateUtils qw( dt_from_string );
@@ -17,26 +18,37 @@ $log->{logger}->level($DEBUG);
 
 our %upgradesDone;
 our %upgrades = (
-  '0.0.1' => \&v001,
-  '0.0.4' => \&v004,
+  '24.11.02' => \&v24_11_02,
+  '24.11.04' => \&v24_11_04,
 );
 
 sub upgrade {
   my ($plugin, $args) = @_;
+  eval {
 
   my $installedVersion = _getInstalledVersion($plugin);
+  $log->info("Checking for upgrades from version '$installedVersion' to latest version '".$plugin->{metadata}->{version}."'");
 
   for my $upgradePackage ( sort keys %upgrades ) {
     if ( version->parse($upgradePackage) > version->parse($installedVersion) ) {
       &{$upgrades{$upgradePackage}}($plugin, $args);
-      $log->info("Upgraded plugin to version $upgradePackage");
+      $log->info("Upgrade package done for plugin version '$upgradePackage'");
       $upgradesDone{$upgradePackage} = 1;
       $plugin->store_data({'__INSTALLED_VERSION__' => $upgradePackage});
     }
   }
 
+  $plugin->store_data({'__INSTALLED_VERSION__' => $plugin->{metadata}->{version}});
+  $log->info("Plugin upgraded to version '".$plugin->{metadata}->{version}."'");
+
   my $dt = dt_from_string();
   $plugin->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
+
+  };
+  if ($@) {
+    $log->error("Upgrade failed: $@");
+    return 0;
+  }
 
   return 1;
 }
@@ -47,17 +59,13 @@ sub _getInstalledVersion {
   if (not($installedVersion)) {
       $log->logdie("Plugin installedVersion '".($installedVersion || 'undef').'\' not defined! Expected re/\d+\.\d+\.\d+/');
   }
-  elsif ($installedVersion =~ /^\d\d\.\d\d\.\d+$/) {
-    $log->info("Plugin installedVersion '$installedVersion' is in old format, converting to new format.");
-    return '0.0.1';
-  }
   if (not($installedVersion =~ /^\d+\.\d+\.\d+$/)) {
       $log->logdie("Plugin installedVersion '".($installedVersion || 'undef').'\' malformed! Expected re/\d+\.\d+\.\d+/');
   }
   return $installedVersion;
 }
 
-sub v001 {
+sub v24_11_02 {
   my ($plugin) = @_;
   my $table_print_list = $plugin->get_qualified_table_name('label_print_list');
 
@@ -75,7 +83,7 @@ sub v001 {
   ") or die($dbh->errstr());
 }
 
-sub v004 {
+sub v24_11_04 {
   my ($plugin) = @_;
 
   my $ratio = 2.877619048;
@@ -88,10 +96,10 @@ sub v004 {
     $pos->{top} /= $ratio if $pos && $pos->{top};
   };
 
-  if (my $sheetVersions = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::listSheetVersions()) {
+  if (my $sheetVersions = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::listSheetVersions($plugin)) {
     for my $sheetVersion (@$sheetVersions) {
       # The programming API for Sheets might be out of sync with the database contents, so safer to use primitives access for guaranteed future upgradability.
-      my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetFromDB($sheetVersion->{id});
+      my $sheet = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::getSheetFromDB($plugin, $sheetVersion->{id});
       $sheet = JSON::XS->new()->decode($sheet->{sheet});
 
       next if ($sheet->{schema});

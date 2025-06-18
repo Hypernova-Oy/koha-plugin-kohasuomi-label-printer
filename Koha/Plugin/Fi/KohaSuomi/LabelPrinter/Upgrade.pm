@@ -29,6 +29,11 @@ sub upgrade {
   my $installedVersion = _getInstalledVersion($plugin);
   $log->info("Checking for upgrades from version '$installedVersion' to latest version '".$plugin->{metadata}->{version}."'");
 
+  unless (_getUpgradeLock($plugin)) {
+    $log->info("PID:'$$'. Failed to acquire upgrade lock. Yielding the upgrade process to some other process.");
+    return 1; # returning 0 would raise an error in the plugin system
+  }
+
   for my $upgradePackage ( sort keys %upgrades ) {
     if ( version->parse($upgradePackage) > version->parse($installedVersion) ) {
       &{$upgrades{$upgradePackage}}($plugin, $args);
@@ -50,6 +55,8 @@ sub upgrade {
     return 0;
   }
 
+  _releaseUpgradeLock($plugin);
+
   return 1;
 }
 
@@ -63,6 +70,36 @@ sub _getInstalledVersion {
       $log->logdie("Plugin installedVersion '".($installedVersion || 'undef').'\' malformed! Expected re/\d+\.\d+\.\d+/');
   }
   return $installedVersion;
+}
+
+sub _getUpgradeLock {
+  my ($plugin) = @_;
+  my $dbh = C4::Context->dbh;
+  my $lockTimeout = 0; # seconds
+  my $lockAcquired = $dbh->selectrow_hashref("SELECT GET_LOCK(?, ?) as 'locked'", undef, _getUpgradeLockName($plugin), $lockTimeout);
+  unless ($lockAcquired->{locked}) {
+    $log->debug("PID:'$$'. Failed to acquire upgrade lock '"._getUpgradeLockName($plugin)."'. Another upgrade might be in progress or the lock is not available.");
+    return undef;
+  }
+  $log->debug("PID:'$$'. Acquired upgrade lock '"._getUpgradeLockName($plugin)."'");
+  return 1;
+}
+
+sub _releaseUpgradeLock {
+  my ($plugin) = @_;
+  my $dbh = C4::Context->dbh;
+  my $lockReleased = $dbh->selectrow_hashref("SELECT RELEASE_LOCK(?) as 'released'", undef, _getUpgradeLockName($plugin));
+  unless ($lockReleased->{released}) {
+    $log->error("PID:'$$'. Failed to release upgrade lock '"._getUpgradeLockName($plugin)."'.");
+    return undef;
+  }
+  $log->debug("PID:'$$'. Released upgrade lock '"._getUpgradeLockName($plugin)."'");
+  return 1;
+}
+
+sub _getUpgradeLockName {
+  my ($plugin) = @_;
+  return C4::Context->config('database').".".$plugin->{metadata}->{name}.".upgrade_lock";
 }
 
 sub v24_11_02 {

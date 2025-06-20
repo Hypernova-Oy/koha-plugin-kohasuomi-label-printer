@@ -329,13 +329,15 @@ Labels.GUI.Controls.displaySheetControls = function (sheet) {
     else {
         $("#sc_grid").val("0");
     }
+    $("#sc_scale").parent().show();
+    $("#sc_scale").show();
 
     $("#dataSourceFunctionDocs").hide();
     Labels.GUI.tooltip.publish(sheet, null, "reload");
 }
 Labels.GUI.Controls.displayRegionControls = function (region) {
     $("#selectionControls, #sheetEditorConfig").show(500);
-    $("#selectionControls input, #selectionControls select, #sheetEditorConfig input").parent().hide();
+    $("#selectionControls input, #selectionControls select, #sheetEditorConfig input, #sc_scale").parent().hide();
 
     $("#sc_boundingBox, #sc_copy").parent().show();
     $("#sc_copy").show();
@@ -351,7 +353,7 @@ Labels.GUI.Controls.displayRegionControls = function (region) {
 }
 Labels.GUI.Controls.displayElementControls = function (element) {
     $("#selectionControls, #sheetEditorConfig").show(500);
-    $("#selectionControls input, #selectionControls select, #sheetEditorConfig input, #sc_copy").parent().hide();
+    $("#selectionControls input, #selectionControls select, #sheetEditorConfig input, #sc_copy, #sc_scale").parent().hide();
 
     $("#sc_dataSource").parent().show();
     if (element.dataSource) {

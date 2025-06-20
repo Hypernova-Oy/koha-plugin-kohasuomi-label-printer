@@ -261,6 +261,32 @@ Labels.Sheet = function(parentElem, params) {
         delete Labels.Sheets.sheets[this.id]; //Flush global pointer
         Labels.Sheets.deleteToREST(this.id, this.version);
     }
+    this.scale = function (scaleFactorPercentage) {
+        let scaleFactor = parseFloat(scaleFactorPercentage) / 100;
+        this.dimensions.width = parseFloat(this.dimensions.width) * scaleFactor;
+        this.dimensions.height = parseFloat(this.dimensions.height) * scaleFactor;
+        this.setSpacings(this.dimensions);
+        this.items.forEach(function(item) {
+            for (const [id, region] of Object.entries(item.regions)) {
+                if (! region.cloneOfId) {
+                    // Clones are not scaled, they inherit dimensions from the original region
+                    region.dimensions.width = parseFloat(region.dimensions.width) * scaleFactor;
+                    region.dimensions.height = parseFloat(region.dimensions.height) * scaleFactor;
+                }
+                region.position.top = parseFloat(region.position.top) * scaleFactor;
+                region.position.left = parseFloat(region.position.left) * scaleFactor;
+                region.setSpacings(region.dimensions, region.position);
+                region.elements.forEach(function(element) {
+                    element.dimensions.width = parseFloat(element.dimensions.width) * scaleFactor;
+                    element.dimensions.height = parseFloat(element.dimensions.height) * scaleFactor;
+                    element.position.top = parseFloat(element.position.top) * scaleFactor;
+                    element.position.left = parseFloat(element.position.left) * scaleFactor;
+                    element.setSpacings(element.dimensions, element.position);
+                });
+            };
+        });
+        Labels.GUI.tooltip.publish(this, null, "resize");
+    }
     this.setName = function (newName) {
         this.name = newName;
         Labels.GUI.sheetlist.setSheetListName(this.id, this.name);

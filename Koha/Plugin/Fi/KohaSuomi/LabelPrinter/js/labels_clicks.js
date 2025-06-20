@@ -13,6 +13,10 @@ $("#saveSheet").click(function() {
     var sheet = Labels.Sheets.getActiveSheet();
     sheet.save();
 });
+$("#sc_scaleButton").click(function() {
+    var scaleFactor = $("#sc_scaleFactor").val();
+    Labels.Sheets.getActiveSheet().scale(scaleFactor);
+});
 $("#importNew").click(function() {
     var name = $("#importName").val();
     var username = $("#importUsername").val();

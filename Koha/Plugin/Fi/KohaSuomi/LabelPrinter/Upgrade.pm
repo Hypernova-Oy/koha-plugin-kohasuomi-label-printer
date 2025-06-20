@@ -120,17 +120,17 @@ sub v24_11_02 {
   ") or die($dbh->errstr());
 }
 
-sub v24_11_04 {
+sub v24_11_04 { # Important to use non-class code here, as sometime in the future when the upgrade is ran, the object classes might not be suitable with old data formats.
   my ($plugin) = @_;
 
   my $ratio = 2.877619048;
   my $convertPixelsToMillimeters = sub {
     my ($objectName, $dim, $pos) = @_;
     $log->info("Converting pixel dimensions (".$dim->{width}.",".$dim->{height}.") and position (".($pos && defined($pos->{left}) ? $pos->{left} : '').",".($pos && defined($pos->{top}) ? $pos->{top} : '').") to millimeters with ratio $ratio");
-    $dim->{width} /= $ratio;
-    $dim->{height} /= $ratio;
-    $pos->{left} /= $ratio if $pos && $pos->{left};
-    $pos->{top} /= $ratio if $pos && $pos->{top};
+    $dim->{width} = sprintf("%.1f", $dim->{width} / $ratio);
+    $dim->{height} = sprintf("%.1f", $dim->{height} / $ratio);
+    $pos->{left} = sprintf("%.1f", $pos->{left} / $ratio) if $pos && $pos->{left};
+    $pos->{top} = sprintf("%.1f", $pos->{top} / $ratio) if $pos && $pos->{top};
   };
 
   if (my $sheetVersions = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager::listSheetVersions($plugin)) {

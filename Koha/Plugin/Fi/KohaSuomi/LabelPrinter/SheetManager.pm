@@ -181,7 +181,7 @@ sub putNewSheetToDB {
 sub putNewVersionToDB {
     my ($plugin, $sheet) = @_;
 
-    if (idInUseInDB($sheet->getId())) {
+    if (idInUseInDB($plugin, $sheet->getId())) {
         $sheet = _updateToDB($plugin, $sheet);
     }
     else {

@@ -25,8 +25,8 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Upgrade;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
-our $DATE_UPDATED = '2025-06-09'; #PLACEHOLDER
-our $VERSION = '24.11.04'; #PLACEHOLDER
+our $DATE_UPDATED = '2025-07-08'; #PLACEHOLDER
+our $VERSION = '24.11.07'; #PLACEHOLDER
 our $MINIMUM_VERSION = "24.11.00.000";
 
 ## Here is our metadata, some keys are required, some are optional

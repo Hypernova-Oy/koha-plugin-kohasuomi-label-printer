@@ -4,7 +4,6 @@ use Modern::Perl;
 use strict;
 use warnings;
 use version;
-use Carp::Always;
 
 use C4::Context;
 use Koha::DateUtils qw( dt_from_string );

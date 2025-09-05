@@ -171,7 +171,7 @@ sub getSheetFromDB {
 sub putNewSheetToDB {
     my ($plugin, $sheet) = @_;
 
-    my $id = selectMaxIdFromDB()+1;
+    my $id = selectMaxIdFromDB($plugin)+1;
     $id = $sheet->getId() if $sheet->getId() > $id;
     $sheet->setId($id);
     $sheet = _putToDB($plugin, $sheet);

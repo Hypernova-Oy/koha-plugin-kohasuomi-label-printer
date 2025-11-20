@@ -90,7 +90,17 @@
         removing characters that still wouldn't fit to the given width.
     </span>
 </div>
-
+<div class="dsfod-doc" id="dsfod-image">
+    <span class="title">Image</span>
+    <span class="comment">
+        Print the given image.<br/>
+        Data source needs to be the base64 encoded data of the Image.
+        Remember to quote "" the data source to treat it as a text source.
+        The PPI/DPI for the image is 72, which is a hard coded PostScript/PDF requirement.<br/>
+        Custom attributes:<br/>
+        <b>scale=1</b><i>The image fills the whole given element dimensions. Otherwise draws the image to the bottom right corner of the element area.</i><br/>
+    </span>
+</div>
 
 
 <div id="dsfod-errors" style="display: none">

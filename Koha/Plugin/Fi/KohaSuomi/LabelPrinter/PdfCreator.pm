@@ -182,7 +182,7 @@ sub printElement {
         Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager::executeDataFormat($element, $text);
     } catch { #Simply tag the Exception with the current Element and pass it upstream
         $log->warn("PrintElement item:'$itemId', exception:'$_'") if $log->is_warn;
-        my $idTag = "Error printing label for Item '$itemId'";
+        my $idTag = "Error printing label for Item '$itemId', Element data source = '".substr($element->getDataSource(), 0, 50)."' data format = '".$element->getDataFormat()."'";
         die "$idTag\n$_" unless blessed($_) && $_->can('rethrow');
         $_->{message} = $idTag."\n".$_->{message};
         $_->rethrow();

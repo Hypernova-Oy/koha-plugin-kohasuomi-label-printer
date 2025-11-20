@@ -667,11 +667,11 @@ Labels.Element = function(region, params) {
     }
     this.setDataSource = function (newDataSource) {
         this.dataSource = newDataSource;
-        this.htmlElem.children(".dataSource").html(this.dataSource);
+        this.htmlElem.children(".dataSource").html(this.dataSource?.substr(0, 20));
     }
     this.setDataFormat = function (newDataFormat) {
         this.dataFormat = newDataFormat;
-        this.htmlElem.children(".dataFormat").html(this.dataFormat);
+        this.htmlElem.children(".dataFormat").html(this.dataFormat?.substr(0, 20));
     }
     this.setColour = function (newColour) {
         var tc = tinycolor(newColour);

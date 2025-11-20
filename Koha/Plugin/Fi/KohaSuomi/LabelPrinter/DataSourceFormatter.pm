@@ -17,15 +17,18 @@ package Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceFormatter;
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 use Modern::Perl;
-use DateTime;
+
 use Class::Inspector;
+use DateTime;
+use List::Util;
+use MIME::Base64;
 use PDF::Reuse;
 use PDF::Reuse::Barcode;
-use List::Util;
 
 use C4::Context;
 
 use Koha::Exceptions;
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Image;
 
 my $log = Koha::Logger->get({category => __PACKAGE__});
 
@@ -199,6 +202,37 @@ sub public_twoLinerShrink {
     my ($data, $element) = @_;
 
     _printLines(_formatLines($element, $data->{text}, 'twoLinerShrink'));
+}
+
+sub public_image {
+    my ($data, $element) = @_;
+    my ($width, $height, $x, $y, $img) = _calculateImageDetails($data, $element);
+    my $intName = PDF::Reuse::prJpeg($img->data, $width, $height, 1);
+    my $str = "q\n";
+    $str   .= "$width 0 0 $height $x $y cm\n";
+    $str   .= "/$intName Do\n";
+    $str   .= "Q\n";
+    prAdd($str);
+}
+sub _calculateImageDetails {
+    my ($data, $element) = @_;
+    use Carp;
+    Carp::cluck(Data::Dumper::Dumper($data));
+    my $base64data = $data->{text};
+    my $customAttr = $element->getCustomAttr();
+    my $img = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Image->new($base64data);
+    my ($imgWidth, $imgHeight) = $img->getJpgDimensions();
+    my $elementWidth = $element->getPdfDimensions()->{width};
+    my $elementHeight = $element->getPdfDimensions()->{height};
+    my $x = $element->getPdfPosition()->{x};
+    my $y = $element->getPdfPosition()->{y} - $elementHeight;
+
+    if ($customAttr->{scale}) {
+        return ($elementWidth, $elementHeight, $x, $y, $img);
+    }
+    else {
+        return ($imgWidth, $imgHeight, $x, $y, $img);
+    }
 }
 
 sub _formatLines {

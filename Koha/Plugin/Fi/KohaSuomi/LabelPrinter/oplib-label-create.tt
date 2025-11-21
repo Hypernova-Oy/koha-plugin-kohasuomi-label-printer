@@ -111,6 +111,13 @@
                       <input type="text" size="15" id="sc_name" placeholder="Name"/>
                     </li>
                     <li>
+                      <input type="number" disabled="true" id="sc_id"/><label for="sc_id">Id.</label>
+                    </li>
+                    <li>
+                    <label for="sc_cloneOfId">Id of the Region this Region is a clone of. Clones will inherit all Elements from the parent Region and add their own.</label>
+                      <select id="sc_cloneOfId"/><label for="sc_cloneOfId">Id of the Region this Region is a clone of. Clones will inherit all Elements from the parent Region and add their own.</label>
+                    </li>
+                    <li>
                       <input type="checkbox" id="sc_boundingBox"/><label for="boundingBox">Draw bounding box</label>
                     </li>
                     <li>

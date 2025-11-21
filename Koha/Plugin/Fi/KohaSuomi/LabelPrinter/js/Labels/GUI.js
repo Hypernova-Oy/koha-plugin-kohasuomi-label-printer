@@ -315,6 +315,15 @@ Labels.GUI.Controls.displaySheetControls = function (sheet) {
     else {
         $("#sc_name").val("");
     }
+
+    $("#sc_id").parent().show();
+    if (sheet.id) {
+        $("#sc_id").val( sheet.id );
+    }
+    else {
+        $("#sc_id").val("");
+    }
+
     $("#sc_dpi").parent().show();
     if (sheet.dpi) {
         $("#sc_dpi").val( sheet.dpi );
@@ -340,6 +349,24 @@ Labels.GUI.Controls.displayRegionControls = function (region) {
     $("#selectionControls input, #selectionControls select, #sheetEditorConfig input, #sc_scale").parent().hide();
 
     $("#sc_boundingBox, #sc_copy").parent().show();
+
+    $("#sc_id").parent().show();
+    if (region.id) {
+        $("#sc_id").val( region.id );
+    }
+    else {
+        $("#sc_id").val("");
+    }
+
+    $("#sc_cloneOfId").parent().show();
+    $("#sc_cloneOfId").html(Labels.Regions.getRegionsIdOptionsHTMLElem());
+    if (region.cloneOfId) {
+        $("#sc_cloneOfId").val( region.cloneOfId );
+    }
+    else {
+        $("#sc_cloneOfId").val("");
+    }
+
     $("#sc_copy").show();
     if (region.boundingBox == true) {
         $("#sc_boundingBox").prop("checked", true);
@@ -354,6 +381,14 @@ Labels.GUI.Controls.displayRegionControls = function (region) {
 Labels.GUI.Controls.displayElementControls = function (element) {
     $("#selectionControls, #sheetEditorConfig").show(500);
     $("#selectionControls input, #selectionControls select, #sheetEditorConfig input, #sc_copy, #sc_scale").parent().hide();
+
+    $("#sc_id").parent().show();
+    if (element.id) {
+        $("#sc_id").val( element.id );
+    }
+    else {
+        $("#sc_id").val("");
+    }
 
     $("#sc_dataSource").parent().show();
     if (element.dataSource) {

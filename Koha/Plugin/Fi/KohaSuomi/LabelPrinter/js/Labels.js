@@ -456,7 +456,6 @@ Labels.Regions.dispenseRegionId = function (existingId) {
 }
 Labels.Region = function(item, params) {
     this.id = Labels.Regions.dispenseRegionId(params.id);
-    this.cloneOfId = params.cloneOfId || null;
     this.boundingBox = (params.boundingBox == "true" || params.boundingBox == true) ? true : false;
     this.elements = [];
     this.clones = [];
@@ -551,11 +550,59 @@ Labels.Region = function(item, params) {
         }
         return me;
     }
+    this.setCloneOfId = function( regionId ) {
+        if (regionId) {
+            var newMasterRegion = Labels.Regions.getRegion(regionId);
+            this.setCloneStatus(newMasterRegion);
+        }
+        else {
+            this.removeCloneStatus();
+        }
+    }
+    /* Adds a clone to this master Region */
     this.addClone = function (region) {
-        region.cloneOfId = this.id;
-        region.dimensions = this.dimensions;
         this.clones.push(region);
         return this;
+    }
+    /* Removes a clone from this master Region */
+    this.removeClone = function (cloneRegion) {
+        var cloneIndexPosition = this.clones.indexOf(cloneRegion);
+        if (cloneIndexPosition) {
+            this.clones.splice(cloneIndexPosition, 1);
+        }
+    }
+    /* Removes clone status from this clone Region */
+    this.removeCloneStatus = function () {
+        if (this.cloneOfId) {
+            this.dimensions = {width: this.dimensions.width, height: this.dimensions.height}
+            var previousMasterRegion = Labels.Regions.getRegion(this.cloneOfId);
+            if (previousMasterRegion) {
+                previousMasterRegion.removeClone(this);
+            }
+            this.cloneOfId = null;
+        }
+        this.setCloneOfItemnumberHTMLElem(null);
+    }
+    /* Adds the clone status to this Region */
+    this.setCloneStatus = function (masterRegion) {
+        if (this.cloneOfId) {
+            this.removeCloneStatus();
+        }
+        this.cloneOfId = masterRegion.id;
+        this.dimensions = masterRegion.dimensions;
+        this.setCloneOfItemnumberHTMLElem(masterRegion);
+        masterRegion.addClone(this);
+    }
+    this.setCloneOfItemnumberHTMLElem = function (masterRegion) {
+        var elem = this.htmlElem.find(".cloneOfItemnumber")
+        if (masterRegion) {
+            elem.html(masterRegion.item.index);
+            elem.show();
+        }
+        else {
+            elem.html('');
+            elem.hide();
+        }
     }
 
     if (params.elements) {
@@ -567,10 +614,7 @@ Labels.Region = function(item, params) {
 
     this.setSpacings(params.dimensions, params.position);
 
-    if (this.cloneOfId) {
-        var sourceRegion = Labels.Regions.getRegion(this.cloneOfId);
-        sourceRegion.addClone(this);
-    }
+    this.setCloneOfId(params.cloneOfId);
 }
 //Template for Region
 Labels.Regions.createHtmlElement = function (region, item) {
@@ -579,11 +623,7 @@ Labels.Regions.createHtmlElement = function (region, item) {
         class: "region"
     })
     .html('<label class="itemnumber">'+item.index+'</label>');
-    if (region.cloneOfId) {
-        var itemOfSourceRegion = Labels.Regions.getRegion(region.cloneOfId).item;
-        regionElem.addClass("clone");
-        regionElem.html(regionElem.html()+'<label class="cloneOfItemnumber">'+itemOfSourceRegion.index+'</label>');
-    }
+    regionElem.html(regionElem.html()+'<label class="cloneOfItemnumber"></label>');
     $(item.sheet.htmlElem).append(regionElem);
     regionElem
     .draggable({
@@ -639,6 +679,9 @@ Labels.Regions.getRegion = function (htmlElemOrId) {
 }
 Labels.Regions.getRegionIdFromElem = function (htmlElem) {
     return $(htmlElem).attr("id").replace("region","");
+}
+Labels.Regions.getRegionsIdOptionsHTMLElem = function () {
+    return `<option value=''></option>`+Object.values(Labels.Regions.regions).sort((a,b) => (a.item.index*1000 + a.id) - (b.item.index*1000 + b.id)).map((region) => `<option value="${region.id}">Item: ${region.item.index}, Region: ${region.id}, Elements: ${region.elements.length}</option>`).join("");
 }
 
 //Package Labels.Element

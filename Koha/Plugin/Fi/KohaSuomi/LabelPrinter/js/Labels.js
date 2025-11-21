@@ -593,6 +593,28 @@ Labels.Region = function(item, params) {
         this.setCloneOfItemnumberHTMLElem(masterRegion);
         masterRegion.addClone(this);
     }
+    this.findOriginMasterRegion = function () {
+        var region = this;
+        var i = 0;
+        while (region.cloneOfId) {
+            if (Labels.Regions.getRegion(region.cloneOfId)) {
+                region = Labels.Regions.getRegion(region.cloneOfId);
+                if (region.id == region.cloneOfId) {
+                    alert(`Region is cloning itself? Fix the clone link for Item='${this.item.index}' Region id='${this.id}'.`);
+                    return region;
+                }
+            }
+            else {
+                alert(`Broken clone chain when finding master Region for Item='${this.item.index}' Region id='${this.id}'.`);
+                return region;
+            }
+            if (i++ > 10) {
+                alert(`Deep recursion when finding master Region for Item='${this.item.index}' Region id='${this.id}'`);
+                return region;
+            }
+        }
+        return region;
+    }
     this.setCloneOfItemnumberHTMLElem = function (masterRegion) {
         var elem = this.htmlElem.find(".cloneOfItemnumber")
         if (masterRegion) {

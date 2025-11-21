@@ -48,7 +48,7 @@ Labels.GUI.cloneOrCopyActiveRegion = function (doClone) {
         regionJSON.id = null;
         if (doClone) {
             regionJSON = {
-                cloneOfId: sourceRegionid,
+                cloneOfId: sourceRegion.findOriginMasterRegion().id,
                 position: regionJSON.position,
                 dimensions: regionJSON.dimensions,
             };

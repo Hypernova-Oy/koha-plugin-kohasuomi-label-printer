@@ -228,6 +228,7 @@ Labels.GUI.SheetList.createListElement = function (sheetList, sheet) {
                '    <span class="title">'+sheet.name+'</span>'+
                '    <a class="author" href="/cgi-bin/koha/members/moremember.pl?borrowernumber='+sheet.author.borrowernumber+'">'+sheet.author.userid+'</a>'+
                '    <span class="version">'+sheet.version+'</span>'+
+               '    <span class="hint">'+sheet.timestamp+'</span>'+
                '  </label>'+
                '</div>';
     var htmlElem = $(html);

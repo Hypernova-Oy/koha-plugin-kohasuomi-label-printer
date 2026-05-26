@@ -23,6 +23,9 @@ use warnings;
 
 use Koha::Exceptions;
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 sub new { my ($class, $jpgPathOrDataBase64) = @_;
   my $data = _getDataFromPathOrData($jpgPathOrDataBase64);
   my $self = bless({data => $data}, $class);

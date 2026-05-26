@@ -74,6 +74,10 @@ sub toHash {
   $obj->{top} = $self->getTop();
   return $obj;
 }
+sub toString {
+    my ($self) = @_;
+    return "pos l=".$self->getLeft().'mm t='.$self->getTop().'mm';
+}
 
 sub getLeft {return $_[0]->{left}}
 sub getTop {return $_[0]->{top}}

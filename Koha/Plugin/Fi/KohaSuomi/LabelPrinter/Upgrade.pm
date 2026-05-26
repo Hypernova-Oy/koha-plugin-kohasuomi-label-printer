@@ -10,10 +10,8 @@ use Koha::DateUtils qw( dt_from_string );
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::SheetManager;
 
-use Koha::Logger;
-use Log::Log4perl::Level;
-our $log = Koha::Logger->get({category => __PACKAGE__});
-$log->{logger}->level($DEBUG);
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
 
 our %upgradesDone;
 our %upgrades = (

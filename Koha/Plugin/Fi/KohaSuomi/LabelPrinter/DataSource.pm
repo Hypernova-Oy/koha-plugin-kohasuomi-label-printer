@@ -23,6 +23,9 @@ use Encode;
 
 use Koha::ItemTypes;
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 =head SYNOPSIS
 
 Define subroutines that process label printer source data into meaningful

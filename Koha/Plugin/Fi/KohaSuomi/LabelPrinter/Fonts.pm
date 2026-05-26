@@ -25,6 +25,9 @@ use File::Basename;
 use Koha::Exceptions;
 use Koha::Exceptions::Config;
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 sub getFonts {
     my $ttf = _getFontsSyspref();
     return $ttf;

@@ -29,6 +29,9 @@ use C4::Items;
 use C4::Biblio;
 use Koha::Libraries;
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 =head SYNOPSIS
 
 This class is a front-end for querying DataSources capabilities

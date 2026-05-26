@@ -21,6 +21,10 @@ use Modern::Perl;
 use Text::ParseWords;
 
 use Koha::Exceptions;
+
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 =head SYNOPSIS
 
 This class takes a String of directives and finds matching data elements.

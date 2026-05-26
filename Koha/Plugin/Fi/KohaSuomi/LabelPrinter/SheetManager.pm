@@ -30,6 +30,9 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::DB;
 use Koha::DateUtils qw( dt_from_string output_pref );
 use Koha::Exceptions;
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 sub getSheet {
     my ($plugin, $sheetId, $version) = @_;
     return _instantiateSheet( getSheetFromDB($plugin, $sheetId, undef, $version) );

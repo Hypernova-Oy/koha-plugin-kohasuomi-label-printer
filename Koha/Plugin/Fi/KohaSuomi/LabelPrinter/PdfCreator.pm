@@ -32,10 +32,8 @@ use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Exceptions::Labels::UnknownItems;
 
 use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::PdfUtil qw(mm2p);
 
-use Koha::Logger;
-use Log::Log4perl::Level;
-our $log = Koha::Logger->get({category => __PACKAGE__});
-#$log->{logger}->level($DEBUG);
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
 
 =head new
 
@@ -72,6 +70,7 @@ sub create {
     my ($self, $itemBarcodes, $noEnd) = @_;
     my $items = $self->_normalizeBarcodesToItems($itemBarcodes); #Check if we have bad items.
     my $sheet = $self->getSheet();
+    $log->debug("Creating Sheet '".$sheet->getName()." (".$sheet->getId().")' with ".scalar(@$itemBarcodes)." items") if $log->is_debug;
 
     ##Start .pdf creation.
     my $filePath = $self->getFile();
@@ -89,24 +88,31 @@ sub create {
     my $firstRun = 1; #Used to prevent new page creation for the first label
 
     my $i = 0; #How many labels have already been printed?
+    my $p = 0; #How many pages have been already created?
     for (my $i=0 ; $i<@$itemBarcodes ; $i++) {
         my $barcode = $itemBarcodes->[$i];
         my $itemIndex = $i % scalar(@{$sheet->{items}});
         my $item = $sheet->getItems()->[$itemIndex];
+        $log->debug("I$i: Processing item '$barcode'") if $log->is_debug;
 
         if ($itemIndex == 0 && not($firstRun)) { #Have we filled all Item slots on this page?
-            #Start a new page
+            $log->debug("New page ".(++$p));
             prPage();
             $self->printBoundingBox($sheet);
         }
         $firstRun = 0 if $firstRun;
 
-        next() if (not($barcode) || length($barcode) == 0); #Don't print an empty barcode, but reserve the sticker slot.
+        if (not($barcode) || length($barcode) == 0) { #Don't print an empty barcode, but reserve the sticker slot.
+            $log->debug("I$i: Skipping empty item slot");
+            next();
+        }
         foreach my $region (@{$item->{regions}}) {
+            $log->debug("I$i:R".$region->getId().": Creating region ".$region->getPosition->toString." ".$region->getDimensions->toString) if $log->is_debug;
             $self->_createRegion($region, $item, $barcode);
         }
     }
 
+    $log->debug("PDF creation complete");
     prEnd() unless $noEnd;
     return ($filePath);
 }
@@ -176,9 +182,8 @@ sub printElement {
     my ($self, $element, $itemId) = @_;
 
     try {
-        $log->debug("PrintElement item:'$itemId'") if $log->is_debug;
         my $text = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager::executeDataSource($element, $itemId);
-        $log->debug("PrintElement item:'$itemId', text:'".($text || 'undef')."'") if $log->is_debug;
+        $log->debug("E".$element->getId().": Creating element ".$element->getPosition->toString." ".$element->getDimensions->toString." $text") if $log->is_debug;
         Koha::Plugin::Fi::KohaSuomi::LabelPrinter::DataSourceManager::executeDataFormat($element, $text);
     } catch { #Simply tag the Exception with the current Element and pass it upstream
         $log->warn("PrintElement item:'$itemId', exception:'$_'") if $log->is_warn;

@@ -27,6 +27,9 @@ use Koha::Exceptions;
 
 use parent qw(Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasDimensions Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasPosition);
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 sub new {
     my ($class, $item, $params) = @_;
 
@@ -138,6 +141,7 @@ sub cloneElementsToRegion {
     foreach my $element (@$elements) {
         my $newElement = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Element->new($region, $element->toHash());
         push(@{$region->{elements}}, $newElement);
+        $log->debug("Cloned element '".$element->getId()."' (".$element->getDimensions()->toString().") to region '".$region->getId()."'") if $log->is_debug;
     }
 }
 

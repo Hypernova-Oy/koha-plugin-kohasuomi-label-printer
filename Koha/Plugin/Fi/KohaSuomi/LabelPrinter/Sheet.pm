@@ -28,6 +28,9 @@ use Koha::Exceptions;
 
 use parent qw(Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasDimensions Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Mixin::HasPosition);
 
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
+
 sub new {
     my ($class, $params) = @_;
 

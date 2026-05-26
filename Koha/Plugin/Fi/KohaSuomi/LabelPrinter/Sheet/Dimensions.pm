@@ -60,6 +60,10 @@ sub toHash {
     $obj->{height} = $self->getHeight();
     return $obj;
 }
+sub toString {
+    my ($self) = @_;
+    return 'dim w='.$self->getWidth().'mm h='.$self->getHeight().'mm';
+}
 
 sub getWidth {return $_[0]->{width}}
 sub getHeight {return $_[0]->{height}}

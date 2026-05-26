@@ -20,9 +20,8 @@ use Modern::Perl;
 use Scalar::Util qw(blessed);
 use Try::Tiny;
 
-use Koha::Logger;
-use Log::Log4perl::Level;
-our $log = Koha::Logger->get({category => __PACKAGE__});
+use Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger;
+my $log = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Logger->get();
 
 our @EXPORT = qw(mm2p);
 use Exporter 'import';

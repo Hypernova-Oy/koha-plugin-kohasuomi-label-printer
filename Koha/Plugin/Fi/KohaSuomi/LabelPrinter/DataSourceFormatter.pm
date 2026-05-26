@@ -294,6 +294,8 @@ sub _formatLines {
     }
     else {
         if ($customAttr->{center} && $freeSpace->{right} > 0) {
+            my %pos = %$pos; #clone $pos for modification
+            $pos = \%pos;
             $pos->{x} += $freeSpace->{right}/2; #Center the text
         }
         return ($pos, [$text], $fontSize, $element->getFont(), $element->getColour());

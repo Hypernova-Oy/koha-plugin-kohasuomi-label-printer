@@ -137,12 +137,14 @@ sub cloneElementsToRegion {
     unless (blessed($region) && $region->isa('Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Region')) {
         Koha::Exceptions::BadParameter->throw(error => __PACKAGE__."->cloneElementsToRegion($region) Parameter 'region' is not a Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Region-object");
     }
+    return if ($region->{_clonedAlread});
     my $elements = $self->getElements();
     foreach my $element (@$elements) {
         my $newElement = Koha::Plugin::Fi::KohaSuomi::LabelPrinter::Sheet::Element->new($region, $element->toHash());
         push(@{$region->{elements}}, $newElement);
         $log->debug("Cloned element '".$element->getId()."' (".$element->getDimensions()->toString().") to region '".$region->getId()."'") if $log->is_debug;
     }
+    $region->{_clonedAlread} = 1; # Prevent re-cloning all elements when changing a page
 }
 
 return 1;

@@ -93,7 +93,7 @@
 <div class="dsfod-doc" id="dsfod-image">
     <span class="title">Image</span>
     <span class="comment">
-        Print the given image.<br/>
+        Print the given JPEG image.<br/>
         Data source needs to be the base64 encoded data of the Image.
         Remember to quote "" the data source to treat it as a text source.
         The PPI/DPI for the image is 72, which is a hard coded PostScript/PDF requirement.<br/>

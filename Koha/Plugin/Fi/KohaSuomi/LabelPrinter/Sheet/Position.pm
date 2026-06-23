@@ -41,10 +41,10 @@ sub new {
     $self->{top} = $optionalTopInMM;
   }
 
-  unless ($self->{left} =~ /^\d+\.?\d*$/) {
+  unless ($self->{left} =~ /^-?\d+\.?\d*$/) {
     Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dimensions' has bad left '".($self->{left} ? $self->{left} : 'undef')."'.");
   }
-  unless ($self->{top} =~ /^\d+\.?\d*$/) {
+  unless ($self->{top} =~ /^-?\d+\.?\d*$/) {
     Koha::Exceptions::BadParameter->throw(error => __PACKAGE__.":: Parameter 'dimensions' has bad top '".($self->{top} ? $self->{top} : 'undef')."'.");
   }
   if ($parent && $origo) {

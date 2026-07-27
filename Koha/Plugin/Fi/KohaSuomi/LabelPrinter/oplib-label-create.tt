@@ -1,7 +1,6 @@
     [% INCLUDE 'doc-head-open.inc' %]
     <title>Koha &rsaquo; Tools &rsaquo; Labels &rsaquo; Label printer</title>
     [% INCLUDE 'doc-head-close.inc' %]
-    [% INCLUDE 'greybox.inc' %]
     <link rel="stylesheet" href="[% PLUGIN_PATH %]/css/labels.css">
     <link rel="stylesheet" href="[% PLUGIN_PATH %]/css/jquery-ui-1.13.3.min.css">
 </head>
